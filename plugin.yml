@@ -1,0 +1,36 @@
+name: Sleeper
+version: 1.2.0
+description: Skip the night with a percentage of players and an animation.
+author: Hraponssi
+main: sleeper.main.Main
+api-version: 1.13
+commands:
+  ignoresleep:
+    description: Make sleeper ignore if you sleep
+    permission: sleeper.ignore
+    usage: /ignoresleep
+  sleepdata:
+    description: See sleep data/debug
+    permission: sleeper.data
+    usage: /sleepdata
+  sleepreload:
+    description: Reload the sleeper config
+    permission: sleeper.reload
+    usage: /sleepreload
+permissions:
+  sleeper.*:
+    description: Gives access to all commands for Sleeper.
+    default: op
+    children:
+      sleeper.reload: true
+      sleeper.ignore: true
+      sleeper.admin: true
+  sleeper.reload:
+    description: Allows reloading the config of Sleeper.
+    default: op
+  sleeper.ignore:
+    description: Allows you to toggle being ignored for sleeping.
+    default: op
+  sleeper.data:
+    description: Allows debug of Sleeper.
+    default: op

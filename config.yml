@@ -1,0 +1,11 @@
+#Default config for Sleeper
+
+#Settings
+UseAnimation: true
+SkipPercentage: 25
+SkipSpeed: 100
+
+#Messages
+SleepInfo: "&aSleep > &7%percent% (%count%) out of a minimum of 25% sleeping."
+NightSkip: "&aSleep > &7At least 25% of online users sleeping (%count%), skipping the night."
+Ignored: "&cSleep > &7You are still being ignored for sleep calculations!"
