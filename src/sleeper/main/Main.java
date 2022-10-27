@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
@@ -114,7 +115,7 @@ public class Main extends JavaPlugin{
 		if(ignorePlayers.contains(player)) return;
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() { public void run() {
 			if (player.isSleeping() == true){
-				float onlineIgnored = 0;
+				int onlineIgnored = 0;
 				for(Player p : Bukkit.getOnlinePlayers()) {
 					if(ignorePlayers.contains(p) || p.getWorld() != world) {
 						onlineIgnored++;
@@ -122,12 +123,14 @@ public class Main extends JavaPlugin{
 				}
 				eventhandlers.playersOnline = Bukkit.getOnlinePlayers().size()-onlineIgnored;
 				eventhandlers.sleeping++;
+				DecimalFormat dfrmt = new DecimalFormat();
+				dfrmt.setMaximumFractionDigits(2);
 				if(debugPlayers.contains(player)) {
 					player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "eventhandlers.sleeping: " + eventhandlers.sleeping);
 					player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "eventhandlers.playersOnline: " + eventhandlers.playersOnline);
 					player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "skipping: " + skipping);
 				}
-				player.sendMessage(ChatColor.translateAlternateColorCodes('&', sleepInfo.replace("%percent%", (eventhandlers.sleeping/eventhandlers.playersOnline)*100 + "%").replace("%count%", Float.toString(eventhandlers.sleeping))));
+				player.sendMessage(ChatColor.translateAlternateColorCodes('&', sleepInfo.replace("%percent%", dfrmt.format((eventhandlers.sleeping/eventhandlers.playersOnline)*100) + "%").replace("%count%", Integer.toString(eventhandlers.sleeping))));
 				if(debugPlayers.contains(player)) {
 					player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Checking if should skip....");
 					player.sendMessage(ChatColor.YELLOW + "DEBUG: sleeping/onlineplayers : " + ChatColor.GRAY + (eventhandlers.sleeping/eventhandlers.playersOnline));
@@ -137,7 +140,7 @@ public class Main extends JavaPlugin{
 						player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
 					}
 					for (Player players : Bukkit.getOnlinePlayers()) {
-						players.sendMessage(ChatColor.translateAlternateColorCodes('&', nightSkip.replace("%percent%", (eventhandlers.sleeping/eventhandlers.playersOnline)*100 + "%").replace("%count%", Float.toString(eventhandlers.sleeping))));
+						players.sendMessage(ChatColor.translateAlternateColorCodes('&', nightSkip.replace("%percent%", dfrmt.format((eventhandlers.sleeping/eventhandlers.playersOnline)*100) + "%").replace("%count%", Integer.toString(eventhandlers.sleeping))));
 					}
 					skipping = true;
 					if(!useAnimation) {

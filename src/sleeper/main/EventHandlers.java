@@ -1,5 +1,7 @@
 package sleeper.main;
 
+import java.text.DecimalFormat;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,7 +16,7 @@ import net.md_5.bungee.api.ChatColor;
 
 public class EventHandlers implements Listener{
 	//Main main;
-	float sleeping;
+	int sleeping;
 	float playersOnline;
 
 	Main plugin;
@@ -33,7 +35,9 @@ public class EventHandlers implements Listener{
 	public void onBedExit(PlayerBedLeaveEvent event) {
 		Player player = event.getPlayer();
 		if(sleeping > 0) {sleeping--;}
-		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.sleepInfo.replace("%percent%", (sleeping/playersOnline)*100 + "%").replace("%count%", Float.toString(sleeping))));
+		DecimalFormat dfrmt = new DecimalFormat();
+		dfrmt.setMaximumFractionDigits(2);
+		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.sleepInfo.replace("%percent%", dfrmt.format((sleeping/playersOnline)*100) + "%").replace("%count%", Integer.toString(sleeping))));
 	}
 	
 	@EventHandler
@@ -47,7 +51,9 @@ public class EventHandlers implements Listener{
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		if(plugin.ignorePlayers.contains(player)) {
-			player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.ignored.replace("%percent%", (sleeping/playersOnline)*100 + "%").replace("%count%", Float.toString(sleeping))));
+			DecimalFormat dfrmt = new DecimalFormat();
+			dfrmt.setMaximumFractionDigits(2);
+			player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.ignored.replace("%percent%", dfrmt.format((sleeping/playersOnline)*100) + "%").replace("%count%", Integer.toString(sleeping))));
 		}
 	}
 }
