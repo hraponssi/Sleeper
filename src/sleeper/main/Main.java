@@ -31,6 +31,7 @@ public class Main extends JavaPlugin{
 	boolean useAnimation = true;
 	int skipPercentage = 25;
 	int skipSpeed = 100;
+	String skipWorld = "world";
 	
 	//Strings
 	String sleepInfo = "&aSleep > &7 %percent% (%count%) out of a minimum of 25% sleeping.";
@@ -61,7 +62,7 @@ public class Main extends JavaPlugin{
 		plugin.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
 			public void run() {
 				if(skipping && useAnimation) {
-					World world = Bukkit.getWorld("world");
+					World world = Bukkit.getWorld(skipWorld);
 					long time = world.getTime();
 					world.setTime(time+skipSpeed);
 					world.setStorm(false); 
@@ -111,7 +112,8 @@ public class Main extends JavaPlugin{
 	}
 
 	public void sleep(Player player){
-		World world = Bukkit.getWorld("world");
+		skipWorld = player.getWorld().getName(); //TODO make a system that tracks per world, this assumes only one world with sleeping exists
+		World world = Bukkit.getWorld(skipWorld);
 		if(ignorePlayers.contains(player)) return;
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() { public void run() {
 			if (player.isSleeping() == true){
