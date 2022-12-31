@@ -37,10 +37,12 @@ public class Commands implements CommandExecutor {
 					plugin.debugPlayers.add(player);
 				}
 				player.sendMessage(ChatColor.RED + "Sleep data:");
-				player.sendMessage(ChatColor.GREEN + "Sleeping: " + ChatColor.GRAY + eventhandlers.sleeping);
-				player.sendMessage(ChatColor.GREEN + "Latest 'online' player count: "+ ChatColor.GRAY + eventhandlers.playersOnline);
+				player.sendMessage(ChatColor.GREEN + "Sleeping per world: ");
+				plugin.sleepingWorlds.keySet().forEach(world -> player.sendMessage(ChatColor.GRAY + world + " - " + plugin.sleepingWorlds.get(world).toString()));
+				player.sendMessage(ChatColor.GREEN + "Latest 'online' player count per world: ");
+				plugin.playersOnline.keySet().forEach(world -> player.sendMessage(ChatColor.GRAY + world + " - " + plugin.playersOnline.get(world).toString()));
 				player.sendMessage(ChatColor.GREEN + "True online player count: "+ ChatColor.GRAY + Bukkit.getOnlinePlayers().size());
-				player.sendMessage(ChatColor.GREEN + "Skipping: "+ ChatColor.GRAY + plugin.skipping);
+				player.sendMessage(ChatColor.GREEN + "Skipping: "+ ChatColor.GRAY + plugin.skipping.toString());
 				int onlineIgnored = 0;
 				for(Player ignore : plugin.ignorePlayers) {
 					if(Bukkit.getOnlinePlayers().contains(ignore)) {
@@ -49,9 +51,7 @@ public class Commands implements CommandExecutor {
 				}
 				player.sendMessage(ChatColor.GREEN + "Ignored player count: " + ChatColor.GRAY + onlineIgnored);
 				player.sendMessage(ChatColor.GREEN + "Ignoring players: ");
-				for(Player p : plugin.ignorePlayers) {
-					player.sendMessage(ChatColor.GRAY + p.getDisplayName());
-				}
+				plugin.ignorePlayers.forEach(p -> player.sendMessage(ChatColor.GRAY + p.getDisplayName()));
 				return true;
 			}else if(command.equalsIgnoreCase("sleepreload")) {
 				plugin.loadConfig();
