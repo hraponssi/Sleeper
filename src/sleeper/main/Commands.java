@@ -19,7 +19,7 @@ public class Commands implements CommandExecutor {
 	public boolean onCommand(CommandSender sender, Command cmd, String command, String[] args) {
 		if(sender instanceof Player) {
 			Player player = (Player) sender;
-			if(command.equalsIgnoreCase("ignoresleep")) {
+			if(cmd.getName().equals("ignoresleep")) {
 				if(plugin.ignorePlayers.contains(player)) {
 					player.sendMessage(ChatColor.GREEN + "You are no longer ignored from sleeping");
 					plugin.ignorePlayers.remove(player);
@@ -28,7 +28,7 @@ public class Commands implements CommandExecutor {
 					plugin.ignorePlayers.add(player);
 				}
 				return true;
-			}else if(command.equalsIgnoreCase("sleepdata")) { //Debug
+			}else if(cmd.getName().equals("sleepdata")) { //Debug
 				if(plugin.debugPlayers.contains(player)) {
 					player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Debug disabled");
 					plugin.debugPlayers.remove(player);
@@ -53,7 +53,7 @@ public class Commands implements CommandExecutor {
 				player.sendMessage(ChatColor.GREEN + "Ignoring players: ");
 				plugin.ignorePlayers.forEach(p -> player.sendMessage(ChatColor.GRAY + p.getDisplayName()));
 				return true;
-			}else if(command.equalsIgnoreCase("sleepreload")) {
+			}else if(cmd.getName().equals("sleepreload")) {
 				plugin.loadConfig();
 				player.sendMessage(ChatColor.GREEN + "Sleep config reloaded.");
 				return true;

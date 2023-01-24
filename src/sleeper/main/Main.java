@@ -158,7 +158,7 @@ public class Main extends JavaPlugin{
 						player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
 					}
 					for (Player players : Bukkit.getOnlinePlayers()) {
-						players.sendMessage(ChatColor.translateAlternateColorCodes('&', nightSkip.replace("%percent%", dfrmt.format((wsleeping/wonline)*100) + "%").replace("%count%", Integer.toString(wsleeping))));
+						players.sendMessage(ChatColor.translateAlternateColorCodes('&', nightSkip.replace("%percent%", dfrmt.format((wsleeping/wonline)*100) + "%").replace("%count%", Integer.toString(wsleeping)).replace("%player%", player.getName())));
 					}
 					skipping.add(pWorld);
 					if(!useAnimation) {
