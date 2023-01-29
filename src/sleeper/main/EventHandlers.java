@@ -36,10 +36,11 @@ public class EventHandlers implements Listener{
 		int wsleeping = plugin.sleepingWorlds.getOrDefault(player.getWorld().getName(), 0);
 		int wonline = plugin.playersOnline.getOrDefault(player.getWorld().getName(), 0);
 		if(wsleeping > 0) plugin.sleepingWorlds.put(player.getWorld().getName(), wsleeping-1);
-		player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-				plugin.sleepInfo.replace("%percent%",
-						dfrmt.format((wsleeping/wonline)*100) + "%")
+		if(!plugin.recentlySkipped.contains(player.getWorld().getName())) {
+			player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+				plugin.sleepInfo.replace("%percent%", dfrmt.format((wsleeping/wonline)*100) + "%")
 				.replace("%count%", Integer.toString(wsleeping))));
+		}
 	}
 	
 	@EventHandler

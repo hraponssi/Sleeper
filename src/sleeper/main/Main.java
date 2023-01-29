@@ -32,6 +32,7 @@ public class Main extends JavaPlugin{
 	
 	//Variables
 	ArrayList<String> skipping = new ArrayList<>();
+	ArrayList<String> recentlySkipped = new ArrayList<>();
 	HashMap<String, Integer> skipWorlds = new HashMap<>();
 	ArrayList<Player> ignorePlayers = new ArrayList<Player>();
 	ArrayList<Player> debugPlayers = new ArrayList<Player>();
@@ -79,12 +80,13 @@ public class Main extends JavaPlugin{
 						}
 						if(time < 2000) {
 							remove.add(worldName);
+							Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+								public void run() { //Force sleeping count to 0 in case it has become wrong
+									sleepingWorlds.put(worldName, 0);
+									recentlySkipped.remove(worldName);
+								} 
+							}, 20L);
 						}
-						Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-							public void run() { //Force sleeping count to 0 in case it has become wrong
-								sleepingWorlds.put(worldName, 0);
-							} 
-						}, 20L);
 					}
 				}
 				remove.forEach(name -> skipping.remove(name));
@@ -153,7 +155,7 @@ public class Main extends JavaPlugin{
 					player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Checking if should skip....");
 					player.sendMessage(ChatColor.YELLOW + "DEBUG: sleeping/onlineplayers : " + ChatColor.GRAY + (wsleeping/wonline));
 				}
-				if((wsleeping/wonline)*100 >= skipPercentage && !skipping.contains(pWorld)) {
+				if((wsleeping/wonline)*100 >= skipPercentage && !skipping.contains(pWorld)) { //Skip
 					if(debugPlayers.contains(player)) {
 						player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
 					}
@@ -161,6 +163,7 @@ public class Main extends JavaPlugin{
 						players.sendMessage(ChatColor.translateAlternateColorCodes('&', nightSkip.replace("%percent%", dfrmt.format((wsleeping/wonline)*100) + "%").replace("%count%", Integer.toString(wsleeping)).replace("%player%", player.getName())));
 					}
 					skipping.add(pWorld);
+					recentlySkipped.add(pWorld);
 					if(!useAnimation) {
 						Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() { 
 							public void run() {
@@ -173,6 +176,7 @@ public class Main extends JavaPlugin{
 								Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 									public void run() {
 										sleepingWorlds.put(pWorld, 0);
+										recentlySkipped.remove(pWorld);
 										if(debugPlayers.contains(player)) {
 											player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "sleeping set to 0");
 										}
