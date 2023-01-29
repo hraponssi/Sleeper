@@ -10,11 +10,11 @@ import org.bukkit.entity.Player;
 public class Commands implements CommandExecutor {
 	Main plugin;
 	EventHandlers eventhandlers;
-    public Commands(Main plugin, EventHandlers eventhandler) {
-        super();
-        this.plugin = plugin;
-        this.eventhandlers = eventhandler;
-    }
+	public Commands(Main plugin, EventHandlers eventhandler) {
+		super();
+		this.plugin = plugin;
+		this.eventhandlers = eventhandler;
+	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String command, String[] args) {
 		if(sender instanceof Player) {

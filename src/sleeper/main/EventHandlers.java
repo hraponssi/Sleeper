@@ -17,37 +17,37 @@ public class EventHandlers implements Listener{
 	DecimalFormat dfrmt = new DecimalFormat();
 
 	Main plugin;
-	
-    public EventHandlers(Main plugin) {
-        super();
-        this.plugin = plugin;
-        dfrmt.setMaximumFractionDigits(2);
-    }
-	
+
+	public EventHandlers(Main plugin) {
+		super();
+		this.plugin = plugin;
+		dfrmt.setMaximumFractionDigits(2);
+	}
+
 	@EventHandler
 	public void onBedEnter(PlayerBedEnterEvent event) {
 		Player player = event.getPlayer();
 		Main.plugin.sleep(player);
 	}
-	
+
 	@EventHandler
 	public void onBedExit(PlayerBedLeaveEvent event) {
 		Player player = event.getPlayer();
-		int wsleeping = plugin.sleepingWorlds.getOrDefault(player.getWorld().getName(), 0);
-		int wonline = plugin.playersOnline.getOrDefault(player.getWorld().getName(), 0);
+		float wsleeping = plugin.sleepingWorlds.getOrDefault(player.getWorld().getName(), 0f);
+		float wonline = plugin.playersOnline.getOrDefault(player.getWorld().getName(), 0f);
 		if(wsleeping > 0) plugin.sleepingWorlds.put(player.getWorld().getName(), wsleeping-1);
 		if(!plugin.recentlySkipped.contains(player.getWorld().getName())) {
 			player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-				plugin.sleepInfo.replace("%percent%", dfrmt.format((wsleeping/wonline)*100) + "%")
-				.replace("%count%", Integer.toString(wsleeping))));
+					plugin.sleepInfo.replace("%percent%", dfrmt.format((wsleeping/wonline)*100) + "%")
+					.replace("%count%", dfrmt.format(wsleeping))));
 		}
 	}
-	
+
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 		if(player.isSleeping()) {
-			int wsleeping = plugin.sleepingWorlds.getOrDefault((player.getWorld().getName()), 0);
+			float wsleeping = plugin.sleepingWorlds.getOrDefault((player.getWorld().getName()), 0f);
 			if(wsleeping > 0) plugin.sleepingWorlds.put(player.getWorld().getName(), wsleeping-1);
 		}
 	}
@@ -55,11 +55,11 @@ public class EventHandlers implements Listener{
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		if(plugin.ignorePlayers.contains(player)) {
-			int wsleeping = plugin.sleepingWorlds.getOrDefault(player.getWorld().getName(), 0);
-			int wonline = plugin.playersOnline.getOrDefault(player.getWorld().getName(), 0);
+			float wsleeping = plugin.sleepingWorlds.getOrDefault(player.getWorld().getName(), 0f);
+			float wonline = plugin.playersOnline.getOrDefault(player.getWorld().getName(), 0f);
 			player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.ignored.replace("%percent%", 
 					dfrmt.format((wsleeping/wonline)*100) + "%")
-					.replace("%count%", Integer.toString(wsleeping))));
+					.replace("%count%", dfrmt.format(wsleeping))));
 		}
 	}
 }
