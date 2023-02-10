@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -19,6 +20,9 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+
 public class Main extends JavaPlugin {
     public final Logger logger = getLogger();
     public static Main plugin;
@@ -29,6 +33,17 @@ public class Main extends JavaPlugin {
     boolean useAnimation = true;
     int skipPercentage = 25;
     int skipSpeed = 100;
+
+    // Voting setting values
+    boolean useVote = false;
+    int yesMultiplier = 1;
+    int noMultiplier = 1;
+    int skipVotePercent = 50;
+
+    // Vote variables
+    ArrayList<String> voting = new ArrayList<>();
+    HashMap<String, String> yesVotes = new HashMap<>();
+    HashMap<String, String> noVotes = new HashMap<>();
 
     // Variables
     ArrayList<String> skipping = new ArrayList<>();
@@ -43,6 +58,11 @@ public class Main extends JavaPlugin {
     String sleepInfo = "&aSleep > &7 %percent% (%count%) out of a minimum of 25% sleeping.";
     String nightSkip = "&aSleep > &7At least 25% of online users sleeping (%count%), skipping the night.";
     String ignored = "&cSleep > &7You are still being ignored for sleep calculations!";
+    String voteTitle = "&aSleep > &7Vote below on skipping the night:";
+    String voteYes = "&a&lYes";
+    String voteNo = "&c&lNo";
+    String votedYes = "&aYou voted to skip the night.";
+    String votedNo = "&aYou voted not to skip the night.";
 
     public void onDisable() {
         PluginDescriptionFile pdfFile = this.getDescription();
@@ -61,35 +81,68 @@ public class Main extends JavaPlugin {
         getCommand("ignoresleep").setExecutor(commands);
         getCommand("sleepdata").setExecutor(commands);
         getCommand("sleepreload").setExecutor(commands);
+        getCommand("sleep").setExecutor(commands);
         pm.registerEvents(eventhandlers, this);
         setConfig();
         loadConfig();
-        plugin.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-            public void run() {
-                ArrayList<String> remove = new ArrayList<>();
-                for (String worldName : skipping) {
-                    if (useAnimation) {
-                        World world = Bukkit.getWorld(worldName);
-                        long time = world.getTime();
-                        world.setTime(time + skipSpeed);
-                        world.setStorm(false);
-                        if (time >= 24000) {
-                            world.setTime(0);
-                            time = 0;
-                        }
-                        if (time < 2000) {
-                            remove.add(worldName);
-                            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                                public void run() { // Force sleeping count to 0 in case it has become wrong
-                                    sleepingWorlds.put(worldName, 0f);
-                                    recentlySkipped.remove(worldName);
-                                }
-                            }, 20L);
-                        }
+        plugin.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
+            ArrayList<String> remove = new ArrayList<>();
+            for (String worldName : skipping) {
+                if (useAnimation) {
+                    World world = Bukkit.getWorld(worldName);
+                    long time = world.getTime();
+                    world.setTime(time + skipSpeed);
+                    world.setStorm(false);
+                    if (time >= 24000) {
+                        world.setTime(0);
+                        time = 0;
+                    }
+                    if (time < 2000) {
+                        remove.add(worldName);
+                        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                            public void run() { // Force sleeping count to 0 in case it has become wrong
+                                sleepingWorlds.put(worldName, 0f);
+                                recentlySkipped.remove(worldName);
+                            }
+                        }, 20L);
                     }
                 }
-                remove.forEach(name -> skipping.remove(name));
             }
+            remove.forEach(name -> skipping.remove(name));
+            remove.clear();
+            for (String worldName : voting) {
+                World world = Bukkit.getWorld(worldName);
+                long time = world.getTime();
+                if (skipping.contains(worldName)) continue;
+                if (time < 2000) { //End vote, day time.
+                    remove.add(worldName);
+                    //Clear votes from that world
+                    ArrayList<String> removeVotes = new ArrayList<>();
+                    for(Entry<String, String> vote : yesVotes.entrySet()) {
+                        if(vote.getValue().equals(worldName)) removeVotes.add(vote.getKey());
+                    }
+                    removeVotes.forEach(name -> yesVotes.remove(name));
+                    removeVotes.clear();
+                    for(Entry<String, String> vote : noVotes.entrySet()) {
+                        if(vote.getValue().equals(worldName)) removeVotes.add(vote.getKey());
+                    }
+                    removeVotes.forEach(name -> noVotes.remove(name));
+                    removeVotes.clear();
+                } else { //Check if the votes are enough for a skip
+                    int yVotes = countYes(worldName);
+                    int nVotes = countNo(worldName);
+                    float skipFactor = ((yVotes*yesMultiplier)-(nVotes*noMultiplier))/playersOnline.get(worldName); //Decimal yes votes - no votes divided by world players
+                    getLogger().info("skipfactor: " + skipFactor); //TODO remove log spam
+                    float skipMargin = skipVotePercent*0.01f;
+                    getLogger().info("skipmargin: " + skipMargin);
+                    if(skipFactor >= skipMargin) {
+                        skipping.add(worldName);
+                        recentlySkipped.add(worldName);
+                        getLogger().info("Vote should skip");
+                    }
+                }
+            }
+            remove.forEach(name -> voting.remove(name));
         }, 1L, 1L);
     }
 
@@ -102,6 +155,15 @@ public class Main extends JavaPlugin {
         sleepInfo = config.getString("SleepInfo");
         nightSkip = config.getString("NightSkip");
         ignored = config.getString("Ignored");
+        useVote = config.getBoolean("VoteSkip");
+        yesMultiplier = config.getInt("YesMultiplier");
+        noMultiplier = config.getInt("NoMultiplier");
+        skipVotePercent = config.getInt("SkipVotePercent");
+        voteTitle = config.getString("VoteTitle");
+        voteYes = config.getString("VoteYes");
+        voteNo = config.getString("VoteNo");
+        votedYes = config.getString("VotedYes");
+        votedNo = config.getString("VotedNo");
     }
 
     public void setConfig() {
@@ -128,15 +190,7 @@ public class Main extends JavaPlugin {
         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             public void run() {
                 if (player.isSleeping() == true) {
-                    //Count players to be ignored
-                    float onlineIgnored = 0;
-                    for (Player p : Bukkit.getOnlinePlayers()) {
-                        if (ignorePlayers.contains(p) || p.getWorld() != world) {
-                            onlineIgnored++;
-                        }
-                    }
-                    playersOnline.put(pWorld, Bukkit.getOnlinePlayers().size() - onlineIgnored);
-                    float wonline = plugin.playersOnline.get(player.getWorld().getName());
+                    float wonline = onlinePlayers(pWorld);
                     float wsleeping = sleepingWorlds.getOrDefault(player.getWorld().getName(), 0f); 
                     // Increase sleeper count
                     wsleeping++;
@@ -154,17 +208,28 @@ public class Main extends JavaPlugin {
                                 .sendMessage(ChatColor.GRAY + plugin.playersOnline.get(world).toString()));
                         player.sendMessage(
                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "skipping: " + skipping.toString());
+                        player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "voting: " + voting.toString());
                     }
                     //Sleepinfo message
                     player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                             sleepInfo.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
-                                    .replace("%count%", dfrmt.format(wsleeping))));
+                            .replace("%count%", dfrmt.format(wsleeping))));
                     //Debug
                     if (debugPlayers.contains(player)) {
                         player.sendMessage(
                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Checking if should skip....");
                         player.sendMessage(ChatColor.YELLOW + "DEBUG: sleeping/onlineplayers : " + ChatColor.GRAY
                                 + (wsleeping / wonline));
+                    }
+                    //Send a vote message if enabled and not done yet
+                    if (useVote) {
+                        if(!voting.contains(pWorld)) { //Pure bukkit doesn't have chatcomponent but you shouldn't be using pure Bukkit
+                            voting.add(pWorld);
+                            //Send vote message to world
+                            world.getPlayers().forEach(player -> sendVoteMsg(player));
+                        } else { //If a vote is ongoing send just the sleeper the menu
+                            sendVoteMsg(player);
+                        }
                     }
                     //Check if skip should be done
                     if ((wsleeping / wonline) * 100 >= skipPercentage && !skipping.contains(pWorld)) { // Skip
@@ -174,8 +239,8 @@ public class Main extends JavaPlugin {
                         for (Player players : Bukkit.getOnlinePlayers()) {
                             players.sendMessage(ChatColor.translateAlternateColorCodes('&',
                                     nightSkip.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
-                                            .replace("%count%", dfrmt.format(wsleeping))
-                                            .replace("%player%", player.getName())));
+                                    .replace("%count%", dfrmt.format(wsleeping))
+                                    .replace("%player%", player.getName())));
                         }
                         skipping.add(pWorld);
                         recentlySkipped.add(pWorld);
@@ -212,4 +277,82 @@ public class Main extends JavaPlugin {
             }
         }, 1L);
     }
+    
+    public float onlinePlayers(String worldName) {
+        //Count players to be ignored
+        float onlineIgnored = 0;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (ignorePlayers.contains(p) || p.getWorld().getName() != worldName) {
+                onlineIgnored++;
+            }
+        }
+        float total = Bukkit.getOnlinePlayers().size() - onlineIgnored;
+        playersOnline.put(worldName, total);
+        return total;
+    }
+
+    public void voteYes(Player player) { //TODO config messages
+        if(!voting.contains(player.getWorld().getName())) {
+            player.sendMessage(ChatColor.RED + "Your world isn't voting on a night skip!");
+            return;
+        }
+        if(yesVotes.containsKey(player.getName())) {
+            player.sendMessage(ChatColor.RED + "You have already voted yes.");
+            return;
+        }
+        if(noVotes.containsKey(player.getName())) {
+            noVotes.remove(player.getName());
+        }
+        yesVotes.put(player.getName(), player.getWorld().getName());
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&', votedYes));
+        showVotes(player);
+    }
+
+    public void voteNo(Player player) { //TODO permission checks
+        if(!voting.contains(player.getWorld().getName())) {
+            player.sendMessage(ChatColor.RED + "Your world isn't voting on a night skip!");
+            return;
+        }
+        if(noVotes.containsKey(player.getName())) {
+            player.sendMessage(ChatColor.RED + "You have already voted no.");
+            return;
+        }
+        if(yesVotes.containsKey(player.getName())) {
+            yesVotes.remove(player.getName());
+        }
+        noVotes.put(player.getName(), player.getWorld().getName());
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&', votedNo));
+        showVotes(player);
+    }
+    
+    public int countYes(String worldName) {
+        int yVotes = 0;
+        for (Entry<String, String> set : yesVotes.entrySet()) {
+            if (set.getValue().equals(worldName)) yVotes++;
+        }
+        return yVotes;
+    }
+    
+    public int countNo(String worldName) {
+        int nVotes = 0;
+        for (Entry<String, String> set : noVotes.entrySet()) {
+            if (set.getValue().equals(worldName)) nVotes++;
+        }
+        return nVotes;
+    }
+    
+    public void sendVoteMsg(Player player) {
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteTitle));
+        TextComponent yesMessage = new TextComponent(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', voteYes)));
+        yesMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/sleep yes"));
+        player.spigot().sendMessage(yesMessage);
+        TextComponent noMessage = new TextComponent(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', voteNo)));
+        noMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/sleep no"));
+        player.spigot().sendMessage(noMessage);
+    }
+    
+    public void showVotes(Player player) {
+        player.sendMessage(ChatColor.GREEN + "Yes: " + ChatColor.GRAY + countYes(player.getWorld().getName()) + ChatColor.RED + " No: " + ChatColor.GRAY + countNo(player.getWorld().getName()));
+    }
+
 }

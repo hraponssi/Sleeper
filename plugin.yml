@@ -1,6 +1,6 @@
 name: Sleeper
-version: 1.3.3
-description: Skip the night with a percentage of players and an animation.
+version: 1.4.0
+description: Skip the night with a percentage or vote of players and an animation.
 author: Hraponssi
 main: sleeper.main.Main
 api-version: 1.13
@@ -17,14 +17,25 @@ commands:
     description: Reload the sleeper config
     permission: sleeper.reload
     usage: /sleepreload
+  sleep:
+    description: Vote with subcommands
+    permission: sleeper.sleep
+    usage: /sleep
 permissions:
   sleeper.*:
     description: Gives access to all commands for Sleeper.
     default: op
     children:
+      sleeper.vote: true
       sleeper.reload: true
       sleeper.ignore: true
       sleeper.admin: true
+  sleeper.sleep:
+    description: Allows using /sleep
+    default: true
+  sleeper.vote:
+    description: Allows voting on night skips.
+    default: true
   sleeper.reload:
     description: Allows reloading the config of Sleeper.
     default: op
