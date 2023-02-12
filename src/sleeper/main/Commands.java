@@ -43,7 +43,7 @@ public class Commands implements CommandExecutor {
                 plugin.debugPlayers.add(player);
             }
 
-            //Send all kinds of current data
+            // Send all kinds of current data
             player.sendMessage(ChatColor.RED + "Sleep data:");
             player.sendMessage(ChatColor.GREEN + "Sleeping per world: ");
             plugin.sleepingWorlds.keySet().forEach(world -> player
@@ -51,8 +51,8 @@ public class Commands implements CommandExecutor {
             player.sendMessage(ChatColor.GREEN + "Latest 'online' player count per world: ");
             plugin.playersOnline.keySet().forEach(world -> player
                     .sendMessage(ChatColor.GRAY + world + " - " + plugin.playersOnline.get(world).toString()));
-            player.sendMessage(ChatColor.GREEN + "True online player count: " + ChatColor.GRAY
-                    + Bukkit.getOnlinePlayers().size());
+            player.sendMessage(
+                    ChatColor.GREEN + "True online player count: " + ChatColor.GRAY + Bukkit.getOnlinePlayers().size());
             player.sendMessage(ChatColor.GREEN + "Skipping: " + ChatColor.GRAY + plugin.skipping.toString());
             int onlineIgnored = 0;
             for (Player ignore : plugin.ignorePlayers) {
@@ -69,7 +69,7 @@ public class Commands implements CommandExecutor {
             plugin.loadConfig();
             player.sendMessage(ChatColor.GREEN + "Sleep config reloaded.");
             break;
-        case "sleep": //TODO make all the other commands be part of this
+        case "sleep": // TODO make all the other commands be part of this
             if (args.length >= 1) {
                 switch (args[0].toLowerCase()) {
                 case "yes":
