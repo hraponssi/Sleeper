@@ -63,6 +63,10 @@ public class Main extends JavaPlugin {
     String voteNo = "&c&lNo";
     String votedYes = "&aYou voted to skip the night.";
     String votedNo = "&aYou voted not to skip the night.";
+    String noVote = "&cYour world isn't voting on a night skip.";
+    String alreadyYes = "&cYou have already voted yes.";
+    String alreadyNo = "&cYou have already voted no.";
+    String sleepHelp = "&cInvalid command, valid subcommands are yes, no, votes.";
 
     public void onDisable() {
         PluginDescriptionFile pdfFile = this.getDescription();
@@ -164,6 +168,10 @@ public class Main extends JavaPlugin {
         voteNo = config.getString("VoteNo");
         votedYes = config.getString("VotedYes");
         votedNo = config.getString("VotedNo");
+        noVote = config.getString("NoVote");
+        alreadyYes = config.getString("AlreadyYes");
+        alreadyNo = config.getString("AlreadyNo");
+        sleepHelp = config.getString("SleepHelp");
     }
 
     public void setConfig() {
@@ -293,11 +301,11 @@ public class Main extends JavaPlugin {
 
     public void voteYes(Player player) { //TODO config messages
         if(!voting.contains(player.getWorld().getName())) {
-            player.sendMessage(ChatColor.RED + "Your world isn't voting on a night skip!");
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', noVote));
             return;
         }
         if(yesVotes.containsKey(player.getName())) {
-            player.sendMessage(ChatColor.RED + "You have already voted yes.");
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', alreadyYes));
             return;
         }
         if(noVotes.containsKey(player.getName())) {
@@ -310,11 +318,11 @@ public class Main extends JavaPlugin {
 
     public void voteNo(Player player) { //TODO permission checks
         if(!voting.contains(player.getWorld().getName())) {
-            player.sendMessage(ChatColor.RED + "Your world isn't voting on a night skip!");
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', noVote));
             return;
         }
         if(noVotes.containsKey(player.getName())) {
-            player.sendMessage(ChatColor.RED + "You have already voted no.");
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', alreadyNo));
             return;
         }
         if(yesVotes.containsKey(player.getName())) {

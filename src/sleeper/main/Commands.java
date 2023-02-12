@@ -82,11 +82,11 @@ public class Commands implements CommandExecutor {
                     plugin.showVotes(player);
                     break;
                 default:
-                    player.sendMessage(ChatColor.RED + "Invalid command, valid subcommands are yes, no, votes.");
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.sleepHelp));
                     break;
                 }
             } else {
-                player.sendMessage(ChatColor.GREEN + "This command is for voting, subcommands are: yes, no, votes");
+                player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.sleepHelp));
             }
             break;
         }
