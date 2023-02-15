@@ -26,6 +26,7 @@ permissions:
     description: Gives access to all commands for Sleeper.
     default: op
     children:
+      sleeper.sleep: true
       sleeper.vote: true
       sleeper.reload: true
       sleeper.ignore: true

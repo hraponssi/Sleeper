@@ -304,7 +304,7 @@ public class Main extends JavaPlugin {
         return total;
     }
 
-    public void voteYes(Player player) { // TODO config messages
+    public void voteYes(Player player) {
         if (!player.hasPermission("sleeper.vote")) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noPermission));
             return;
