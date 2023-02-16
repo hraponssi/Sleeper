@@ -1,12 +1,12 @@
 # Sleeper
 
-Skip the night on the server wisely.
+Skip the night wisely.
 
 ## Features of Sleeper
 
-- Skip nights with configurable percentage of players;
+- Skip nights with a configurable percentage of players;
 - Animation of the passage of the night with customization of its speed;
-- **NEW!** Voting system for skip night;
+- **NEW!** Voting system for skipping the night;
 - Full configuration of everything in the config
 
 ## Commands and permissions
