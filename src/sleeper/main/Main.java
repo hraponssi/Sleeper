@@ -33,12 +33,15 @@ public class Main extends JavaPlugin {
     boolean useAnimation = true;
     int skipPercentage = 25;
     int skipSpeed = 100;
+    boolean broadcastSleepInfo = false;
 
     // Voting setting values
     boolean useVote = false;
     int yesMultiplier = 1;
     int noMultiplier = 1;
     int skipVotePercent = 50;
+    boolean blockBedsAfterVoting = false;
+    boolean bossbarVoteCount = true;
 
     // Vote variables
     ArrayList<String> voting = new ArrayList<>();
@@ -175,6 +178,9 @@ public class Main extends JavaPlugin {
         sleepHelp = config.getString("SleepHelp");
         noPermission = config.getString("NoPermission");
         listVotes = config.getString("ListVotes");
+        broadcastSleepInfo = config.getBoolean("BroadcastSleepInfo");
+        blockBedsAfterVoting = config.getBoolean("BlockBedsAfterVoting");
+        bossbarVoteCount = config.getBoolean("BossbarVoteCount");
     }
 
     public void setConfig() {
@@ -225,7 +231,7 @@ public class Main extends JavaPlugin {
                     // Sleepinfo message
                     player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                             sleepInfo.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
-                                    .replace("%count%", dfrmt.format(wsleeping))));
+                                    .replace("%count%", dfrmt.format(wsleeping)).replace("%player%", player.getName())));
                     // Debug
                     if (debugPlayers.contains(player)) {
                         player.sendMessage(

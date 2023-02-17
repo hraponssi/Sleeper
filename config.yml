@@ -4,12 +4,15 @@
 UseAnimation: true
 SkipPercentage: 25
 SkipSpeed: 100
+BroadcastSleepInfo: false
 
 #Voting system, a night is skipped based on yes votes minus no votes
 VoteSkip: false
 YesMultiplier: 1
 NoMultiplier: 1
 SkipVotePercent: 50
+BlockBedsAfterVoting: false
+BossbarVoteCount: true
 
 #Messages
 SleepInfo: "&aSleep > &7%percent% (%count%) out of a minimum of 25% sleeping."
