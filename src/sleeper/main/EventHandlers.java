@@ -25,6 +25,11 @@ public class EventHandlers implements Listener {
     @EventHandler
     public void onBedEnter(PlayerBedEnterEvent event) {
         Player player = event.getPlayer();
+        if(plugin.blockBedsAfterVoting && plugin.voting.contains(player.getWorld().getName()) && plugin.hasVoted(player)) {
+            event.setCancelled(true);
+            plugin.voteYes(player);
+            return;
+        }
         Main.plugin.sleep(player);
     }
 

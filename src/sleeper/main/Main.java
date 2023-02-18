@@ -13,6 +13,9 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -42,6 +45,7 @@ public class Main extends JavaPlugin {
     int skipVotePercent = 50;
     boolean blockBedsAfterVoting = false;
     boolean bossbarVoteCount = true;
+    boolean sendVotesOnStart = true;
 
     // Vote variables
     ArrayList<String> voting = new ArrayList<>();
@@ -56,6 +60,7 @@ public class Main extends JavaPlugin {
     ArrayList<Player> debugPlayers = new ArrayList<Player>();
     HashMap<String, Float> sleepingWorlds = new HashMap<>();
     HashMap<String, Float> playersOnline = new HashMap<>();
+    BossBar bar = Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID);
 
     // Strings
     String sleepInfo = "&aSleep > &7 %percent% (%count%) out of a minimum of 25% sleeping.";
@@ -123,8 +128,20 @@ public class Main extends JavaPlugin {
                 World world = Bukkit.getWorld(worldName);
                 long time = world.getTime();
                 if (skipping.contains(worldName)) continue;
+                if (bossbarVoteCount) {
+                    DecimalFormat dfrmt = new DecimalFormat();
+                    dfrmt.setMaximumFractionDigits(2);
+                    bar.setTitle(ChatColor.translateAlternateColorCodes('&',
+                            listVotes.replace("%yes%", dfrmt.format(countYes(worldName))).replace("%no%",
+                                    dfrmt.format(countNo(worldName)))));
+                    for (Player player : world.getPlayers()) {
+                        if (bar.getPlayers().contains(player)) continue;
+                        bar.addPlayer(player);
+                    }
+                }
                 if (time < 2000) { // End vote, day time.
                     remove.add(worldName);
+                    bar.removeAll();
                     // Clear votes from that world
                     ArrayList<String> removeVotes = new ArrayList<>();
                     for (Entry<String, String> vote : yesVotes.entrySet()) {
@@ -143,7 +160,7 @@ public class Main extends JavaPlugin {
                     float skipFactor = ((yVotes * yesMultiplier) - (nVotes * noMultiplier))
                             / playersOnline.get(worldName); // Decimal yes votes - no votes divided by world players
                     float skipMargin = skipVotePercent * 0.01f;
-                    if (skipFactor >= skipMargin) { //TODO add a message broadcast
+                    if (skipFactor >= skipMargin) { // TODO add a message broadcast
                         skipping.add(worldName);
                         recentlySkipped.add(worldName);
                         getLogger().info("Skipping night by vote in " + worldName);
@@ -181,6 +198,7 @@ public class Main extends JavaPlugin {
         broadcastSleepInfo = config.getBoolean("BroadcastSleepInfo");
         blockBedsAfterVoting = config.getBoolean("BlockBedsAfterVoting");
         bossbarVoteCount = config.getBoolean("BossbarVoteCount");
+        sendVotesOnStart = config.getBoolean("SendVotesOnStart");
     }
 
     public void setConfig() {
@@ -229,9 +247,19 @@ public class Main extends JavaPlugin {
                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "voting: " + voting.toString());
                     }
                     // Sleepinfo message
-                    player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                            sleepInfo.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
-                                    .replace("%count%", dfrmt.format(wsleeping)).replace("%player%", player.getName())));
+                    if (!broadcastSleepInfo) {
+                        player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                                sleepInfo.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
+                                        .replace("%count%", dfrmt.format(wsleeping))
+                                        .replace("%player%", player.getName())));
+                    } else { // Tell everyone in the world
+                        for (Player players : world.getPlayers()) {
+                            players.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                                    sleepInfo.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
+                                            .replace("%count%", dfrmt.format(wsleeping))
+                                            .replace("%player%", player.getName())));
+                        }
+                    }
                     // Debug
                     if (debugPlayers.contains(player)) {
                         player.sendMessage(
@@ -245,10 +273,11 @@ public class Main extends JavaPlugin {
                                                         // using pure Bukkit
                             voting.add(pWorld);
                             // Send vote message to world
-                            world.getPlayers().forEach(player -> sendVoteMsg(player));
+                            if (sendVotesOnStart) world.getPlayers().forEach(player -> sendVoteMsg(player));
                         } else { // If a vote is ongoing send just the sleeper the menu
                             sendVoteMsg(player);
                         }
+                        voteYes(player);
                     }
                     // Check if skip should be done
                     if ((wsleeping / wonline) * 100 >= skipPercentage && !skipping.contains(pWorld)) { // Skip
@@ -386,6 +415,10 @@ public class Main extends JavaPlugin {
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                 listVotes.replace("%yes%", dfrmt.format(countYes(player.getWorld().getName()))).replace("%no%",
                         dfrmt.format(countNo(player.getWorld().getName())))));
+    }
+
+    public boolean hasVoted(Player player) {
+        return (yesVotes.containsKey(player.getName()) || noVotes.containsKey(player.getName()));
     }
 
 }

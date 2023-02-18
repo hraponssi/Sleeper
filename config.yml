@@ -1,9 +1,11 @@
 #Default config for Sleeper
 
-#Settings
+#Main settings
 UseAnimation: true
 SkipPercentage: 25
 SkipSpeed: 100
+
+#Other settings
 BroadcastSleepInfo: false
 
 #Voting system, a night is skipped based on yes votes minus no votes
@@ -13,6 +15,7 @@ NoMultiplier: 1
 SkipVotePercent: 50
 BlockBedsAfterVoting: false
 BossbarVoteCount: true
+SendVotesOnStart: true
 
 #Messages
 SleepInfo: "&aSleep > &7%percent% (%count%) out of a minimum of 25% sleeping."
@@ -28,4 +31,4 @@ AlreadyYes: "&cYou have already voted yes."
 AlreadyNo: "&cYou have already voted no."
 SleepHelp: "&cInvalid command, valid subcommands are yes, no, votes."
 NoPermission: "&cYou don't have permission for that."
-ListVotes: "&aYes: &7%yes% &cNo: &7%no%"
+ListVotes: "&7Votes: &aYes: &7%yes% &cNo: &7%no%"
