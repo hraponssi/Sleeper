@@ -77,6 +77,7 @@ public class Main extends JavaPlugin {
     String sleepHelp = "&cInvalid command, valid subcommands are yes, no, votes.";
     String noPermission = "&cYou don't have permission for that.";
     String listVotes = "&aYes: &7%yes% &cNo: &7%no%";
+    String skipByVote = "&aSleep > &7The vote has decided to skip the night!";
 
     public void onDisable() {
         PluginDescriptionFile pdfFile = this.getDescription();
@@ -195,6 +196,7 @@ public class Main extends JavaPlugin {
         sleepHelp = config.getString("SleepHelp");
         noPermission = config.getString("NoPermission");
         listVotes = config.getString("ListVotes");
+        skipByVote = config.getString("SkipByVote");
         broadcastSleepInfo = config.getBoolean("BroadcastSleepInfo");
         blockBedsAfterVoting = config.getBoolean("BlockBedsAfterVoting");
         bossbarVoteCount = config.getBoolean("BossbarVoteCount");
