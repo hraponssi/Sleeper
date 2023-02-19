@@ -30,7 +30,7 @@ public class EventHandlers implements Listener {
             plugin.voteYes(player);
             return;
         }
-        Main.plugin.sleep(player);
+        plugin.sleep(player);
     }
 
     @EventHandler

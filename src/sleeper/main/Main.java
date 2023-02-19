@@ -28,7 +28,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 public class Main extends JavaPlugin {
     public final Logger logger = getLogger();
-    public static Main plugin;
+    DecimalFormat dfrmt = new DecimalFormat();
     Commands commands;
     EventHandlers eventhandlers;
 
@@ -85,7 +85,6 @@ public class Main extends JavaPlugin {
     }
 
     public void onEnable() {
-        plugin = this;
         PluginDescriptionFile pdfFile = this.getDescription();
         this.logger.info(pdfFile.getName() + " Version " + pdfFile.getVersion() + " Has Been Enabled!");
         int pluginId = 15317;
@@ -100,7 +99,8 @@ public class Main extends JavaPlugin {
         pm.registerEvents(eventhandlers, this);
         setConfig();
         loadConfig();
-        plugin.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
+        dfrmt.setMaximumFractionDigits(2);
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             ArrayList<String> remove = new ArrayList<>();
             for (String worldName : skipping) {
                 if (useAnimation) {
@@ -114,7 +114,7 @@ public class Main extends JavaPlugin {
                     }
                     if (time < 2000) {
                         remove.add(worldName);
-                        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
                             public void run() { // Force sleeping count to 0 in case it has become wrong
                                 sleepingWorlds.put(worldName, 0f);
                                 recentlySkipped.remove(worldName);
@@ -130,8 +130,6 @@ public class Main extends JavaPlugin {
                 long time = world.getTime();
                 if (skipping.contains(worldName)) continue;
                 if (bossbarVoteCount) {
-                    DecimalFormat dfrmt = new DecimalFormat();
-                    dfrmt.setMaximumFractionDigits(2);
                     bar.setTitle(ChatColor.translateAlternateColorCodes('&',
                             listVotes.replace("%yes%", dfrmt.format(countYes(worldName))).replace("%no%",
                                     dfrmt.format(countNo(worldName)))));
@@ -225,7 +223,8 @@ public class Main extends JavaPlugin {
         String pWorld = player.getWorld().getName();
         World world = Bukkit.getWorld(pWorld);
         if (ignorePlayers.contains(player)) return;
-        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+        Main plugin = this;
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
                 if (player.isOnline() && player.isSleeping() == true) {
                     float wonline = onlinePlayers(pWorld);
@@ -233,17 +232,15 @@ public class Main extends JavaPlugin {
                     // Increase sleeper count
                     wsleeping++;
                     sleepingWorlds.put(pWorld, wsleeping);
-                    DecimalFormat dfrmt = new DecimalFormat();
-                    dfrmt.setMaximumFractionDigits(2);
                     // Debug
                     if (debugPlayers.contains(player)) {
                         player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "eventhandlers.sleeping: ");
-                        plugin.sleepingWorlds.keySet().forEach(world -> player
-                                .sendMessage(ChatColor.GRAY + plugin.sleepingWorlds.get(world).toString()));
+                        sleepingWorlds.keySet().forEach(world -> player
+                                .sendMessage(ChatColor.GRAY + sleepingWorlds.get(world).toString()));
                         player.sendMessage(
                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "eventhandlers.playersOnline: ");
-                        plugin.playersOnline.keySet().forEach(world -> player
-                                .sendMessage(ChatColor.GRAY + plugin.playersOnline.get(world).toString()));
+                        playersOnline.keySet().forEach(world -> player
+                                .sendMessage(ChatColor.GRAY + playersOnline.get(world).toString()));
                         player.sendMessage(
                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "skipping: " + skipping.toString());
                         player.sendMessage(
@@ -413,8 +410,6 @@ public class Main extends JavaPlugin {
     }
 
     public void showVotes(Player player) {
-        DecimalFormat dfrmt = new DecimalFormat();
-        dfrmt.setMaximumFractionDigits(2);
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                 listVotes.replace("%yes%", dfrmt.format(countYes(player.getWorld().getName()))).replace("%no%",
                         dfrmt.format(countNo(player.getWorld().getName())))));
