@@ -164,6 +164,7 @@ public class Main extends JavaPlugin {
                     if (skipFactor >= skipMargin) { // TODO add a message broadcast
                         skipping.add(worldName);
                         recentlySkipped.add(worldName);
+                        world.getPlayers().forEach(player -> player.sendMessage(ChatColor.translateAlternateColorCodes('&', skipByVote)));
                         getLogger().info("Skipping night by vote in " + worldName);
                     }
                 }
