@@ -46,6 +46,7 @@ public class Main extends JavaPlugin {
     boolean blockBedsAfterVoting = false;
     boolean bossbarVoteCount = true;
     boolean sendVotesOnStart = true;
+    boolean voteStarts = false;
 
     // Vote variables
     ArrayList<String> voting = new ArrayList<>();
@@ -160,7 +161,7 @@ public class Main extends JavaPlugin {
                     float skipFactor = ((yVotes * yesMultiplier) - (nVotes * noMultiplier))
                             / playersOnline.get(worldName); // Decimal yes votes - no votes divided by world players
                     float skipMargin = skipVotePercent * 0.01f;
-                    if (skipFactor >= skipMargin) { // TODO add a message broadcast
+                    if (skipFactor >= skipMargin) {
                         skipping.add(worldName);
                         recentlySkipped.add(worldName);
                         world.getPlayers().forEach(player -> player.sendMessage(ChatColor.translateAlternateColorCodes('&', skipByVote)));
@@ -202,6 +203,7 @@ public class Main extends JavaPlugin {
         blockBedsAfterVoting = config.getBoolean("BlockBedsAfterVoting");
         bossbarVoteCount = config.getBoolean("BossbarVoteCount");
         sendVotesOnStart = config.getBoolean("SendVotesOnStart");
+        voteStarts = config.getBoolean("StartWithoutSleep");
     }
 
     public void setConfig() {
@@ -271,14 +273,7 @@ public class Main extends JavaPlugin {
                     }
                     // Send a vote message if enabled and not done yet
                     if (useVote) {
-                        if (!voting.contains(pWorld)) { // Pure bukkit doesn't have chatcomponent but you shouldn't be
-                                                        // using pure Bukkit
-                            voting.add(pWorld);
-                            // Send vote message to world
-                            if (sendVotesOnStart) world.getPlayers().forEach(player -> sendVoteMsg(player));
-                        } else { // If a vote is ongoing send just the sleeper the menu
-                            sendVoteMsg(player);
-                        }
+                        startVote(player);
                         voteYes(player);
                     }
                     // Check if skip should be done
@@ -341,10 +336,27 @@ public class Main extends JavaPlugin {
         return total;
     }
 
+    public void startVote(Player player) {
+        World world = player.getWorld();
+        String pWorld = world.getName();
+        onlinePlayers(pWorld);
+        if (!voting.contains(pWorld)) { // Pure bukkit doesn't have chatcomponent but you shouldn't be
+            // using pure Bukkit
+            voting.add(pWorld);
+            // Send vote message to world
+            if (sendVotesOnStart) world.getPlayers().forEach(wPlayer -> sendVoteMsg(wPlayer));
+        } else { // If a vote is ongoing send just the sleeper the menu
+            sendVoteMsg(player);
+        }
+    }
+    
     public void voteYes(Player player) {
         if (!player.hasPermission("sleeper.vote")) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noPermission));
             return;
+        }
+        if (voteStarts && !voting.contains(player.getWorld().getName())) {
+            startVote(player);
         }
         if (!useVote) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteNotEnabled));
@@ -363,6 +375,7 @@ public class Main extends JavaPlugin {
         }
         yesVotes.put(player.getName(), player.getWorld().getName());
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', votedYes));
+        onlinePlayers(player.getWorld().getName());
         showVotes(player);
     }
 
@@ -370,6 +383,9 @@ public class Main extends JavaPlugin {
         if (!player.hasPermission("sleeper.vote")) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noPermission));
             return;
+        }
+        if (voteStarts && !voting.contains(player.getWorld().getName())) {
+            startVote(player);
         }
         if (!useVote) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteNotEnabled));
@@ -388,6 +404,7 @@ public class Main extends JavaPlugin {
         }
         noVotes.put(player.getName(), player.getWorld().getName());
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', votedNo));
+        onlinePlayers(player.getWorld().getName());
         showVotes(player);
     }
 

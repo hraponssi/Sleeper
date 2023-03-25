@@ -16,6 +16,7 @@ SkipVotePercent: 50
 BlockBedsAfterVoting: false
 BossbarVoteCount: true
 SendVotesOnStart: true
+StartWithoutSleep: false
 
 #Messages
 SleepInfo: "&aSleep > &7%percent% (%count%) out of a minimum of 25% sleeping."
