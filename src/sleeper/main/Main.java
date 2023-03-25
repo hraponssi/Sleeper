@@ -78,6 +78,7 @@ public class Main extends JavaPlugin {
     String noPermission = "&cYou don't have permission for that.";
     String listVotes = "&aYes: &7%yes% &cNo: &7%no%";
     String skipByVote = "&aSleep > &7The vote has decided to skip the night!";
+    String voteNotEnabled = "&cVoting is not enabled.";
 
     public void onDisable() {
         PluginDescriptionFile pdfFile = this.getDescription();
@@ -196,6 +197,7 @@ public class Main extends JavaPlugin {
         noPermission = config.getString("NoPermission");
         listVotes = config.getString("ListVotes");
         skipByVote = config.getString("SkipByVote");
+        voteNotEnabled = config.getString("VoteNotEnabled");
         broadcastSleepInfo = config.getBoolean("BroadcastSleepInfo");
         blockBedsAfterVoting = config.getBoolean("BlockBedsAfterVoting");
         bossbarVoteCount = config.getBoolean("BossbarVoteCount");
@@ -344,6 +346,10 @@ public class Main extends JavaPlugin {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noPermission));
             return;
         }
+        if (!useVote) {
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteNotEnabled));
+            return;
+        }
         if (!voting.contains(player.getWorld().getName())) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noVote));
             return;
@@ -363,6 +369,10 @@ public class Main extends JavaPlugin {
     public void voteNo(Player player) {
         if (!player.hasPermission("sleeper.vote")) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noPermission));
+            return;
+        }
+        if (!useVote) {
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteNotEnabled));
             return;
         }
         if (!voting.contains(player.getWorld().getName())) {
@@ -398,6 +408,10 @@ public class Main extends JavaPlugin {
     }
 
     public void sendVoteMsg(Player player) {
+        if (!useVote) {
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteNotEnabled));
+            return;
+        }
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteTitle));
         TextComponent yesMessage = new TextComponent(
                 TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', voteYes)));

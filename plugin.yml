@@ -1,5 +1,5 @@
 name: Sleeper
-version: 1.4.1
+version: 1.4.2
 description: Skip the night with a percentage or vote of players and an animation.
 author: Hraponssi
 main: sleeper.main.Main
