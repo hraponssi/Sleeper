@@ -1,22 +1,25 @@
 # Sleeper
 
-Skip the night wisely.
+![Sleeper icon](Assets/icon.png)
 
-## Features of Sleeper
+Skip the night with an animation and some logic, with configuration.
 
-- Skip nights with a configurable percentage of players;
-- Animation of the passage of the night with customization of its speed;
-- **NEW!** Voting system for skipping the night;
-- Full configuration of everything in the config
+### Features of Sleeper
 
-## Commands and permissions
+- Skip nights with a configurable percentage of players
+- Animated night skip with a configurable speed
+- Voting system for skipping the night
+- Fully configurable through the config
 
-### Everyone
+### Commands and permissions
 
-- ***sleeper.sleep* | /sleep** - Vote with subcommands
+** Everyone **
 
-### Admin
+- ***sleeper.sleep* | /sleep** - Main command for subcommands
+- ***sleeper.vote*** - Vote with the "yes" and "no" subcommands
+
+** Admin **
 
 - ***sleeper.ignore* | /sleepignore** - Make sleeper ignore if you sleep
-- ***sleeper.reload* | /sleepreload** - Reload plugin command
-- ***sleeper.data* | /sleepdata** - See sleeper debug
+- ***sleeper.reload* | /sleepreload** - Reload plugin configuration
+- ***sleeper.data* | /sleepdata** - See debug messages
