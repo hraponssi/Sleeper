@@ -340,12 +340,11 @@ public class Main extends JavaPlugin {
         World world = player.getWorld();
         String pWorld = world.getName();
         onlinePlayers(pWorld);
-        if (!voting.contains(pWorld)) { // Pure bukkit doesn't have chatcomponent but you shouldn't be
-            // using pure Bukkit
+        if (!voting.contains(pWorld) && world.getTime() >= 12542) { // Pure bukkit doesn't have chatcomponent, don't use pure Bukkit
             voting.add(pWorld);
             // Send vote message to world
             if (sendVotesOnStart) world.getPlayers().forEach(wPlayer -> sendVoteMsg(wPlayer));
-        } else { // If a vote is ongoing send just the sleeper the menu
+        } else if (world.getTime() >= 12542) { // If a vote is ongoing send just the sleeper the menu
             sendVoteMsg(player);
         }
     }
