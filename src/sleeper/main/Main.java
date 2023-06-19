@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -327,7 +328,7 @@ public class Main extends JavaPlugin {
         // Count players to be ignored
         float onlineIgnored = 0;
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (ignorePlayers.contains(p) || p.getWorld().getName() != worldName) {
+            if (ignorePlayers.contains(p) || p.getWorld().getName() != worldName || p.getGameMode().equals(GameMode.SPECTATOR) || p.getGameMode().equals(GameMode.CREATIVE)) {
                 onlineIgnored++;
             }
         }
