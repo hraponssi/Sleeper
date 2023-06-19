@@ -165,7 +165,8 @@ public class Main extends JavaPlugin {
                     if (skipFactor >= skipMargin) {
                         skipping.add(worldName);
                         recentlySkipped.add(worldName);
-                        world.getPlayers().forEach(player -> player.sendMessage(ChatColor.translateAlternateColorCodes('&', skipByVote)));
+                        world.getPlayers().forEach(
+                                player -> player.sendMessage(ChatColor.translateAlternateColorCodes('&', skipByVote)));
                         getLogger().info("Skipping night by vote in " + worldName);
                     }
                 }
@@ -240,12 +241,12 @@ public class Main extends JavaPlugin {
                     // Debug
                     if (debugPlayers.contains(player)) {
                         player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "eventhandlers.sleeping: ");
-                        sleepingWorlds.keySet().forEach(world -> player
-                                .sendMessage(ChatColor.GRAY + sleepingWorlds.get(world).toString()));
+                        sleepingWorlds.keySet().forEach(
+                                world -> player.sendMessage(ChatColor.GRAY + sleepingWorlds.get(world).toString()));
                         player.sendMessage(
                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "eventhandlers.playersOnline: ");
-                        playersOnline.keySet().forEach(world -> player
-                                .sendMessage(ChatColor.GRAY + playersOnline.get(world).toString()));
+                        playersOnline.keySet().forEach(
+                                world -> player.sendMessage(ChatColor.GRAY + playersOnline.get(world).toString()));
                         player.sendMessage(
                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "skipping: " + skipping.toString());
                         player.sendMessage(
@@ -328,7 +329,8 @@ public class Main extends JavaPlugin {
         // Count players to be ignored
         float onlineIgnored = 0;
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (ignorePlayers.contains(p) || p.getWorld().getName() != worldName || p.getGameMode().equals(GameMode.SPECTATOR) || p.getGameMode().equals(GameMode.CREATIVE)) {
+            if (ignorePlayers.contains(p) || p.getWorld().getName() != worldName
+                    || p.getGameMode().equals(GameMode.SPECTATOR) || p.getGameMode().equals(GameMode.CREATIVE)) {
                 onlineIgnored++;
             }
         }
@@ -341,7 +343,7 @@ public class Main extends JavaPlugin {
         World world = player.getWorld();
         String pWorld = world.getName();
         onlinePlayers(pWorld);
-        if (!voting.contains(pWorld) && world.getTime() >= 12542) { // Pure bukkit doesn't have chatcomponent, don't use pure Bukkit
+        if (!voting.contains(pWorld) && world.getTime() >= 12542) { // Bukkit doesn't have chatcomponent, don't use it
             voting.add(pWorld);
             // Send vote message to world
             if (sendVotesOnStart) world.getPlayers().forEach(wPlayer -> sendVoteMsg(wPlayer));
@@ -349,7 +351,7 @@ public class Main extends JavaPlugin {
             sendVoteMsg(player);
         }
     }
-    
+
     public void voteYes(Player player) {
         if (!player.hasPermission("sleeper.vote")) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noPermission));
