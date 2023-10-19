@@ -8,6 +8,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -58,8 +59,8 @@ public class Main extends JavaPlugin {
     ArrayList<String> skipping = new ArrayList<>();
     ArrayList<String> recentlySkipped = new ArrayList<>();
     HashMap<String, Integer> skipWorlds = new HashMap<>();
-    ArrayList<Player> ignorePlayers = new ArrayList<Player>();
-    ArrayList<Player> debugPlayers = new ArrayList<Player>();
+    ArrayList<UUID> ignorePlayers = new ArrayList<UUID>();
+    ArrayList<UUID> debugPlayers = new ArrayList<UUID>();
     HashMap<String, Float> sleepingWorlds = new HashMap<>();
     HashMap<String, Float> playersOnline = new HashMap<>();
     BossBar bar = Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID);
@@ -228,7 +229,7 @@ public class Main extends JavaPlugin {
     public void sleep(Player player) {
         String pWorld = player.getWorld().getName();
         World world = Bukkit.getWorld(pWorld);
-        if (ignorePlayers.contains(player)) return;
+        if (ignorePlayers.contains(player.getUniqueId())) return;
         Main plugin = this;
         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
@@ -239,7 +240,7 @@ public class Main extends JavaPlugin {
                     wsleeping++;
                     sleepingWorlds.put(pWorld, wsleeping);
                     // Debug
-                    if (debugPlayers.contains(player)) {
+                    if (debugPlayers.contains(player.getUniqueId())) {
                         player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "eventhandlers.sleeping: ");
                         sleepingWorlds.keySet().forEach(
                                 world -> player.sendMessage(ChatColor.GRAY + sleepingWorlds.get(world).toString()));
@@ -267,7 +268,7 @@ public class Main extends JavaPlugin {
                         }
                     }
                     // Debug
-                    if (debugPlayers.contains(player)) {
+                    if (debugPlayers.contains(player.getUniqueId())) {
                         player.sendMessage(
                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Checking if should skip....");
                         player.sendMessage(ChatColor.YELLOW + "DEBUG: sleeping/onlineplayers : " + ChatColor.GRAY
@@ -280,7 +281,7 @@ public class Main extends JavaPlugin {
                     }
                     // Check if skip should be done
                     if ((wsleeping / wonline) * 100 >= skipPercentage && !skipping.contains(pWorld)) { // Skip
-                        if (debugPlayers.contains(player)) {
+                        if (debugPlayers.contains(player.getUniqueId())) {
                             player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
                         }
                         for (Player players : world.getPlayers()) {
@@ -294,7 +295,7 @@ public class Main extends JavaPlugin {
                         if (!useAnimation) {
                             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
                                 public void run() {
-                                    if (player.isOnline() && debugPlayers.contains(player)) {
+                                    if (player.isOnline() && debugPlayers.contains(player.getUniqueId())) {
                                         player.sendMessage(
                                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping after delay");
                                     }
@@ -305,7 +306,7 @@ public class Main extends JavaPlugin {
                                         public void run() {
                                             sleepingWorlds.put(pWorld, 0f);
                                             recentlySkipped.remove(pWorld);
-                                            if (player.isOnline() && debugPlayers.contains(player)) {
+                                            if (player.isOnline() && debugPlayers.contains(player.getUniqueId())) {
                                                 player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY
                                                         + "sleeping set to 0");
                                             }
@@ -314,7 +315,7 @@ public class Main extends JavaPlugin {
                                 }
                             }, 120L);
                         } else {
-                            if (debugPlayers.contains(player)) {
+                            if (debugPlayers.contains(player.getUniqueId())) {
                                 player.sendMessage(
                                         ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping with animation");
                             }
@@ -326,10 +327,10 @@ public class Main extends JavaPlugin {
     }
 
     public float onlinePlayers(String worldName) {
-        // Count players to be ignored
+        // Count players to be ignored, returns it and also updates per world list
         float onlineIgnored = 0;
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (ignorePlayers.contains(p) || p.getWorld().getName() != worldName
+            if (ignorePlayers.contains(p.getUniqueId()) || p.getWorld().getName() != worldName
                     || p.getGameMode().equals(GameMode.SPECTATOR) || p.getGameMode().equals(GameMode.CREATIVE)) {
                 onlineIgnored++;
             }
@@ -339,10 +340,18 @@ public class Main extends JavaPlugin {
         return total;
     }
 
+    public ArrayList<Player> getOnlineIgnorers() { //TODO there are two definitions of "ignored": these in the list or those in spectator mode etc
+        ArrayList<Player> players = new ArrayList<>();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if(ignorePlayers.contains(p.getUniqueId())) players.add(p);
+        }
+        return players;
+    }
+    
     public void startVote(Player player) {
         World world = player.getWorld();
         String pWorld = world.getName();
-        onlinePlayers(pWorld);
+        onlinePlayers(pWorld); // Update listed count of online players for the world
         if (!voting.contains(pWorld) && world.getTime() >= 12542) { // Bukkit doesn't have chatcomponent, don't use it
             voting.add(pWorld);
             // Send vote message to world

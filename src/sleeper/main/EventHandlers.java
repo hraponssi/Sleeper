@@ -58,7 +58,7 @@ public class EventHandlers implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (plugin.ignorePlayers.contains(player)) {
+        if (plugin.ignorePlayers.contains(player.getUniqueId())) {
             float wsleeping = plugin.sleepingWorlds.getOrDefault(player.getWorld().getName(), 0f);
             float wonline = plugin.playersOnline.getOrDefault(player.getWorld().getName(), 0f);
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',

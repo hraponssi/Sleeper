@@ -26,21 +26,21 @@ public class Commands implements CommandExecutor {
         Player player = (Player) sender;
         switch (cmd.getName().toLowerCase()) {
         case "ignoresleep":
-            if (plugin.ignorePlayers.contains(player)) {
+            if (plugin.ignorePlayers.contains(player.getUniqueId())) {
                 player.sendMessage(ChatColor.GREEN + "You are no longer ignored from sleeping");
-                plugin.ignorePlayers.remove(player);
+                plugin.ignorePlayers.remove(player.getUniqueId());
             } else {
                 player.sendMessage(ChatColor.RED + "You are now ignored from sleeping");
-                plugin.ignorePlayers.add(player);
+                plugin.ignorePlayers.add(player.getUniqueId());
             }
             break;
         case "sleepdata": // Debug
-            if (plugin.debugPlayers.contains(player)) {
+            if (plugin.debugPlayers.contains(player.getUniqueId())) {
                 player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Debug disabled");
-                plugin.debugPlayers.remove(player);
+                plugin.debugPlayers.remove(player.getUniqueId());
             } else {
                 player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Debug enabled");
-                plugin.debugPlayers.add(player);
+                plugin.debugPlayers.add(player.getUniqueId());
             }
 
             // Send all kinds of current data
@@ -54,16 +54,10 @@ public class Commands implements CommandExecutor {
             player.sendMessage(
                     ChatColor.GREEN + "True online player count: " + ChatColor.GRAY + Bukkit.getOnlinePlayers().size());
             player.sendMessage(ChatColor.GREEN + "Skipping: " + ChatColor.GRAY + plugin.skipping.toString());
-            int onlineIgnored = 0;
-            for (Player ignore : plugin.ignorePlayers) {
-                if (Bukkit.getOnlinePlayers().contains(ignore)) {
-                    onlineIgnored++;
-                }
-            }
+            int onlineIgnored = plugin.getOnlineIgnorers().size();
             player.sendMessage(ChatColor.GREEN + "Ignored player count: " + ChatColor.GRAY + onlineIgnored);
             player.sendMessage(ChatColor.GREEN + "Ignoring players: ");
-            plugin.ignorePlayers.forEach(p -> player.sendMessage(ChatColor.GRAY + p.getDisplayName()));
-
+            plugin.getOnlineIgnorers().forEach(p -> player.sendMessage(ChatColor.GRAY + p.getDisplayName()));
             break;
         case "sleepreload":
             plugin.loadConfig();
