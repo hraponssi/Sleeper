@@ -361,12 +361,12 @@ public class Main extends JavaPlugin {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noPermission));
             return;
         }
-        if (voteStarts && !voting.contains(player.getWorld().getName())) {
-            startVote(player);
-        }
         if (!useVote) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteNotEnabled));
             return;
+        }
+        if (voteStarts && !voting.contains(player.getWorld().getName())) {
+            startVote(player);
         }
         if (!voting.contains(player.getWorld().getName())) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noVote));
