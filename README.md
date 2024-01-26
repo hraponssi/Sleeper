@@ -20,6 +20,6 @@ Skip the night with an animation and some logic, with configuration.
 
 **Admin**
 
-- ***sleeper.ignore* | /sleepignore** - Make sleeper ignore if you sleep
-- ***sleeper.reload* | /sleepreload** - Reload plugin configuration
-- ***sleeper.data* | /sleepdata** - See debug messages
+- ***sleeper.ignore*** - Use the "ignore" subcommand to make sleeper ignore if you sleep
+- ***sleeper.reload*** - Use the "reload" subcommand to reload plugin configuration
+- ***sleeper.data*** - Use the "debug" subcommand to see debug messages

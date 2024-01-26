@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -29,7 +28,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class Main extends JavaPlugin {
-    public final Logger logger = getLogger();
     DecimalFormat dfrmt = new DecimalFormat();
     Commands commands;
     EventHandlers eventhandlers;
@@ -77,7 +75,7 @@ public class Main extends JavaPlugin {
     String noVote = "&cYour world isn't voting on a night skip.";
     String alreadyYes = "&cYou have already voted yes.";
     String alreadyNo = "&cYou have already voted no.";
-    String sleepHelp = "&cInvalid command, valid subcommands are yes, no, votes.";
+    String sleepHelpList = "&cInvalid command, valid subcommands are: ";
     String noPermission = "&cYou don't have permission for that.";
     String listVotes = "&aYes: &7%yes% &cNo: &7%no%";
     String skipByVote = "&aSleep > &7The vote has decided to skip the night!";
@@ -85,20 +83,17 @@ public class Main extends JavaPlugin {
 
     public void onDisable() {
         PluginDescriptionFile pdfFile = this.getDescription();
-        this.logger.info(pdfFile.getName() + " Has Been Disabled!");
+        getLogger().info(pdfFile.getName() + " Has Been Disabled!");
     }
 
     public void onEnable() {
         PluginDescriptionFile pdfFile = this.getDescription();
-        this.logger.info(pdfFile.getName() + " Version " + pdfFile.getVersion() + " Has Been Enabled!");
+        getLogger().info(pdfFile.getName() + " Version " + pdfFile.getVersion() + " Has Been Enabled!");
         int pluginId = 15317;
         Metrics metrics = new Metrics(this, pluginId);
         PluginManager pm = getServer().getPluginManager();
         eventhandlers = new EventHandlers(this);
         commands = new Commands(this, eventhandlers);
-        getCommand("ignoresleep").setExecutor(commands);
-        getCommand("sleepdata").setExecutor(commands);
-        getCommand("sleepreload").setExecutor(commands);
         getCommand("sleep").setExecutor(commands);
         pm.registerEvents(eventhandlers, this);
         setConfig();
@@ -197,7 +192,7 @@ public class Main extends JavaPlugin {
         noVote = config.getString("NoVote");
         alreadyYes = config.getString("AlreadyYes");
         alreadyNo = config.getString("AlreadyNo");
-        sleepHelp = config.getString("SleepHelp");
+        sleepHelpList = config.getString("SleepHelpList");
         noPermission = config.getString("NoPermission");
         listVotes = config.getString("ListVotes");
         skipByVote = config.getString("SkipByVote");
@@ -395,12 +390,12 @@ public class Main extends JavaPlugin {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noPermission));
             return;
         }
-        if (voteStarts && !voting.contains(player.getWorld().getName())) {
-            startVote(player);
-        }
         if (!useVote) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteNotEnabled));
             return;
+        }
+        if (voteStarts && !voting.contains(player.getWorld().getName())) {
+            startVote(player);
         }
         if (!voting.contains(player.getWorld().getName())) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', noVote));
