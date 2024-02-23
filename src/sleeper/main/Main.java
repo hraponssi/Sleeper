@@ -162,7 +162,7 @@ public class Main extends JavaPlugin {
                         skipping.add(worldName);
                         recentlySkipped.add(worldName);
                         world.getPlayers().forEach(
-                                player -> player.sendMessage(ChatColor.translateAlternateColorCodes('&', skipByVote)));
+                                player -> sendMessage(player, ChatColor.translateAlternateColorCodes('&', skipByVote)));
                         getLogger().info("Skipping night by vote in " + worldName);
                     }
                 }
@@ -220,6 +220,11 @@ public class Main extends JavaPlugin {
             e.printStackTrace();
         }
     }
+    
+    // Message sending system to allow skipping sending blank messages
+    public void sendMessage(Player player, String message) {
+        if (!message.equals("")) player.sendMessage(message);
+    }
 
     public void sleep(Player player) {
         String pWorld = player.getWorld().getName();
@@ -250,13 +255,13 @@ public class Main extends JavaPlugin {
                     }
                     // Sleepinfo message
                     if (!broadcastSleepInfo) {
-                        player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        sendMessage(player, ChatColor.translateAlternateColorCodes('&',
                                 sleepInfo.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
                                         .replace("%count%", dfrmt.format(wsleeping))
                                         .replace("%player%", player.getName())));
                     } else { // Tell everyone in the world
                         for (Player players : world.getPlayers()) {
-                            players.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                            sendMessage(players, ChatColor.translateAlternateColorCodes('&',
                                     sleepInfo.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
                                             .replace("%player%", player.getName())));
@@ -280,7 +285,7 @@ public class Main extends JavaPlugin {
                             player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
                         }
                         for (Player players : world.getPlayers()) {
-                            players.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                            sendMessage(players, ChatColor.translateAlternateColorCodes('&',
                                     nightSkip.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
                                             .replace("%player%", player.getName())));

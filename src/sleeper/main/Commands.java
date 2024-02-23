@@ -27,7 +27,7 @@ public class Commands implements CommandExecutor {
         }
         Player player = (Player) sender;
         switch (cmd.getName().toLowerCase()) {
-        case "sleep":
+        case "sleep": // TODO: add tab completion
             if (args.length < 1) {
                 player.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(player)));
                 break;
