@@ -34,16 +34,32 @@ public class Commands implements CommandExecutor {
             }
             switch (args[0].toLowerCase()) {
             case "yes":
+            	if (!player.hasPermission("sleeper.vote")) {
+            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
+            		break;
+            	}
                 plugin.voteYes(player);
                 break;
             case "no":
+            	if (!player.hasPermission("sleeper.vote")) {
+            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
+            		break;
+            	}
                 plugin.voteNo(player);
                 break;
             case "votes":
+            	if (!player.hasPermission("sleeper.vote")) {
+            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
+            		break;
+            	}
                 plugin.showVotes(player);
                 break;
             // TODO: Add a command to list ignored players?
             case "ignore":
+            	if (!player.hasPermission("sleeper.ignore")) {
+            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
+            		break;
+            	}
                 if (plugin.ignorePlayers.contains(player.getUniqueId())) {
                     player.sendMessage(ChatColor.GREEN + "You are no longer ignored from sleeping");
                     plugin.ignorePlayers.remove(player.getUniqueId());
@@ -53,6 +69,10 @@ public class Commands implements CommandExecutor {
                 }
                 break;
             case "debug": // A bunch of debug data
+            	if (!player.hasPermission("sleeper.data")) {
+            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
+            		break;
+            	}
                 if (plugin.debugPlayers.contains(player.getUniqueId())) {
                     player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Debug disabled");
                     plugin.debugPlayers.remove(player.getUniqueId());
@@ -78,6 +98,10 @@ public class Commands implements CommandExecutor {
                 plugin.getOnlineIgnorers().forEach(p -> player.sendMessage(ChatColor.GRAY + p.getDisplayName()));
                 break;
             case "reload":
+            	if (!player.hasPermission("sleeper.reload")) {
+            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
+            		break;
+            	}
                 plugin.loadConfig();
                 player.sendMessage(ChatColor.GREEN + "Sleep config reloaded.");
                 break;
