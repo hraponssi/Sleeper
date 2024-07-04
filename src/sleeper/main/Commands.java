@@ -4,6 +4,7 @@ import java.util.StringJoiner;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -83,6 +84,9 @@ public class Commands implements CommandExecutor {
 
                 // Send all kinds of current data
                 player.sendMessage(ChatColor.RED + "Sleep data:");
+                if (player.getGameMode().equals(GameMode.SPECTATOR) || player.getGameMode().equals(GameMode.CREATIVE)) {
+                	player.sendMessage(ChatColor.GRAY + "Note: you will be ignored from sleep calculations in spectator or creative mode.");
+                }
                 player.sendMessage(ChatColor.GREEN + "Sleeping per world: ");
                 plugin.sleepingWorlds.keySet().forEach(world -> player
                         .sendMessage(ChatColor.GRAY + world + " - " + plugin.sleepingWorlds.get(world).toString()));

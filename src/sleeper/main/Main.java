@@ -239,6 +239,9 @@ public class Main extends JavaPlugin {
                     // Increase sleeper count
                     wsleeping++;
                     sleepingWorlds.put(pWorld, wsleeping);
+                    float percentage = (wsleeping / wonline) * 100;
+                    // Replace e.g. infinity percentage with 100%, if ignored players slept
+                    if (percentage > 100) percentage = 100;
                     // Debug
                     if (debugPlayers.contains(player.getUniqueId())) {
                         player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "eventhandlers.sleeping: ");
@@ -256,13 +259,13 @@ public class Main extends JavaPlugin {
                     // Sleepinfo message
                     if (!broadcastSleepInfo) {
                         sendMessage(player, ChatColor.translateAlternateColorCodes('&',
-                                sleepInfo.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
+                                sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                         .replace("%count%", dfrmt.format(wsleeping))
                                         .replace("%player%", player.getName())));
                     } else { // Tell everyone in the world
                         for (Player players : world.getPlayers()) {
                             sendMessage(players, ChatColor.translateAlternateColorCodes('&',
-                                    sleepInfo.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
+                                    sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
                                             .replace("%player%", player.getName())));
                         }
@@ -280,13 +283,13 @@ public class Main extends JavaPlugin {
                         voteYes(player);
                     }
                     // Check if skip should be done
-                    if ((wsleeping / wonline) * 100 >= skipPercentage && !skipping.contains(pWorld)) { // Skip
+                    if (percentage >= skipPercentage && !skipping.contains(pWorld)) { // Skip
                         if (debugPlayers.contains(player.getUniqueId())) {
                             player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
                         }
                         for (Player players : world.getPlayers()) {
                             sendMessage(players, ChatColor.translateAlternateColorCodes('&',
-                                    nightSkip.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
+                                    nightSkip.replace("%percent%", dfrmt.format(percentage) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
                                             .replace("%player%", player.getName())));
                         }
