@@ -2,7 +2,7 @@
 
 #Main settings
 UseAnimation: true
-SkipPercentage: 25
+SkipPercentage: 1
 SkipSpeed: 100
 
 #Other settings
