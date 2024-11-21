@@ -12,12 +12,12 @@ import org.bukkit.entity.Player;
 
 public class Commands implements CommandExecutor {
     Main plugin;
-    EventHandlers eventhandlers;
+    Voting voting;
 
-    public Commands(Main plugin, EventHandlers eventhandler) {
+    public Commands(Main plugin, Voting voting) {
         super();
         this.plugin = plugin;
-        this.eventhandlers = eventhandler;
+        this.voting = voting;
     }
 
     @Override
@@ -39,21 +39,21 @@ public class Commands implements CommandExecutor {
             		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
             		break;
             	}
-                plugin.voteYes(player);
+            	voting.voteYes(player);
                 break;
             case "no":
             	if (!player.hasPermission("sleeper.vote")) {
             		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
             		break;
             	}
-                plugin.voteNo(player);
+            	voting.voteNo(player);
                 break;
             case "votes":
             	if (!player.hasPermission("sleeper.vote")) {
             		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
             		break;
             	}
-                plugin.showVotes(player);
+            	voting.showVotes(player);
                 break;
             // TODO: Add a command to list ignored players?
             case "ignore":

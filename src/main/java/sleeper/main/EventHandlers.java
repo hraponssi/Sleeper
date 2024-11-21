@@ -15,19 +15,21 @@ public class EventHandlers implements Listener {
     DecimalFormat dfrmt = new DecimalFormat();
 
     Main plugin;
+    Voting voting;
 
-    public EventHandlers(Main plugin) {
+    public EventHandlers(Main plugin, Voting voting) {
         super();
         this.plugin = plugin;
+        this.voting = voting;
         dfrmt.setMaximumFractionDigits(2);
     }
 
     @EventHandler
     public void onBedEnter(PlayerBedEnterEvent event) {
         Player player = event.getPlayer();
-        if(plugin.blockBedsAfterVoting && plugin.voting.contains(player.getWorld().getName()) && plugin.hasVoted(player)) {
+        if(voting.blockBedsAfterVoting && voting.votingWorlds.contains(player.getWorld().getName()) && voting.hasVoted(player)) {
             event.setCancelled(true);
-            plugin.voteYes(player);
+            voting.voteYes(player);
             return;
         }
         plugin.sleep(player);
