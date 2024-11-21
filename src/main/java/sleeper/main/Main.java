@@ -91,11 +91,9 @@ public class Main extends JavaPlugin {
                     }
                     if (time < 2000) {
                         remove.add(worldName);
-                        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-                            public void run() { // Force sleeping count to 0 in case it has become wrong
-                                sleepingWorlds.put(worldName, 0f);
-                                recentlySkipped.remove(worldName);
-                            }
+                        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> { // Force sleeping count to 0 in case it has become wrong
+                        	sleepingWorlds.put(worldName, 0f);
+                        	recentlySkipped.remove(worldName);
                         }, 20L);
                     }
                 }
