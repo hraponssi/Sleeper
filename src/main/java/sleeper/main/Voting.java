@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -85,9 +86,7 @@ public class Voting {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', alreadyYes));
             return;
         }
-        if (noVotes.containsKey(player.getName())) {
-            noVotes.remove(player.getName());
-        }
+        noVotes.remove(player.getName());
         yesVotes.put(player.getName(), player.getWorld().getName());
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', votedYes));
         plugin.onlinePlayers(player.getWorld().getName());
@@ -114,9 +113,7 @@ public class Voting {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', alreadyNo));
             return;
         }
-        if (yesVotes.containsKey(player.getName())) {
-            yesVotes.remove(player.getName());
-        }
+        yesVotes.remove(player.getName());
         noVotes.put(player.getName(), player.getWorld().getName());
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', votedNo));
         plugin.onlinePlayers(player.getWorld().getName());
@@ -209,6 +206,28 @@ public class Voting {
                 }
             }
         }
+    }
+    
+    public void loadConfig(FileConfiguration config) {
+        useVote = config.getBoolean("VoteSkip");
+        yesMultiplier = config.getInt("YesMultiplier");
+        noMultiplier = config.getInt("NoMultiplier");
+        skipVotePercent = config.getInt("SkipVotePercent");
+        voteTitle = config.getString("VoteTitle");
+        voteYes = config.getString("VoteYes");
+        voteNo = config.getString("VoteNo");
+        votedYes = config.getString("VotedYes");
+        votedNo = config.getString("VotedNo");
+        noVote = config.getString("NoVote");
+        alreadyYes = config.getString("AlreadyYes");
+        alreadyNo = config.getString("AlreadyNo");
+        listVotes = config.getString("ListVotes");
+        skipByVote = config.getString("SkipByVote");
+        voteNotEnabled = config.getString("VoteNotEnabled");
+        blockBedsAfterVoting = config.getBoolean("BlockBedsAfterVoting");
+        bossbarVoteCount = config.getBoolean("BossbarVoteCount");
+        sendVotesOnStart = config.getBoolean("SendVotesOnStart");
+        voteStarts = config.getBoolean("StartWithoutSleep");
     }
     
 }

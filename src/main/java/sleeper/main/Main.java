@@ -78,8 +78,7 @@ public class Main extends JavaPlugin {
         loadConfig();
         dfrmt.setMaximumFractionDigits(2);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            ArrayList<String> remove = new ArrayList<>();
-            for (String worldName : skipping) {
+            for (String worldName : new ArrayList<>(skipping)) {
                 if (useAnimation) {
                     World world = Bukkit.getWorld(worldName);
                     long time = world.getTime();
@@ -90,7 +89,7 @@ public class Main extends JavaPlugin {
                         time = 0;
                     }
                     if (time < 2000) {
-                        remove.add(worldName);
+                        skipping.remove(worldName);
                         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> { // Force sleeping count to 0 in case it has become wrong
                         	sleepingWorlds.put(worldName, 0f);
                         	recentlySkipped.remove(worldName);
@@ -98,8 +97,6 @@ public class Main extends JavaPlugin {
                     }
                 }
             }
-            remove.forEach(name -> skipping.remove(name));
-            remove.clear();
             voting.tick();
         }, 1L, 1L);
     }
@@ -113,28 +110,10 @@ public class Main extends JavaPlugin {
         sleepInfo = config.getString("SleepInfo");
         nightSkip = config.getString("NightSkip");
         ignored = config.getString("Ignored");
-        voting.useVote = config.getBoolean("VoteSkip");
-        voting.yesMultiplier = config.getInt("YesMultiplier");
-        voting.noMultiplier = config.getInt("NoMultiplier");
-        voting.skipVotePercent = config.getInt("SkipVotePercent");
-        voting.voteTitle = config.getString("VoteTitle");
-        voting.voteYes = config.getString("VoteYes");
-        voting.voteNo = config.getString("VoteNo");
-        voting.votedYes = config.getString("VotedYes");
-        voting.votedNo = config.getString("VotedNo");
-        voting.noVote = config.getString("NoVote");
-        voting.alreadyYes = config.getString("AlreadyYes");
-        voting.alreadyNo = config.getString("AlreadyNo");
         sleepHelpList = config.getString("SleepHelpList");
         noPermission = config.getString("NoPermission");
-        voting.listVotes = config.getString("ListVotes");
-        voting.skipByVote = config.getString("SkipByVote");
-        voting.voteNotEnabled = config.getString("VoteNotEnabled");
         broadcastSleepInfo = config.getBoolean("BroadcastSleepInfo");
-        voting.blockBedsAfterVoting = config.getBoolean("BlockBedsAfterVoting");
-        voting.bossbarVoteCount = config.getBoolean("BossbarVoteCount");
-        voting.sendVotesOnStart = config.getBoolean("SendVotesOnStart");
-        voting.voteStarts = config.getBoolean("StartWithoutSleep");
+        voting.loadConfig(config);
     }
 
     public void setConfig() {
