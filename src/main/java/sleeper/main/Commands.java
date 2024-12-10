@@ -129,9 +129,11 @@ public class Commands implements CommandExecutor {
         if (player.hasPermission("sleeper.ignore")) {
             builder.add("ignore");
         }
+        /*
         if (player.hasPermission("sleeper.data")) {
             builder.add("debug");
         }
+        */
         if (player.hasPermission("sleeper.reload")) {
             builder.add("reload");
         }
