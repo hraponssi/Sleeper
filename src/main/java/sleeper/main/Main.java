@@ -7,7 +7,9 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.UUID;
 
 import org.bstats.bukkit.Metrics;
@@ -25,15 +27,13 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-
 public class Main extends JavaPlugin { 
     Voting voting;
     EventHandlers eventhandlers;
     Commands commands;
     
     DecimalFormat dfrmt = new DecimalFormat();
+    Random random = new Random();
 
     // Setting values
     boolean useAnimation = true;
@@ -53,7 +53,7 @@ public class Main extends JavaPlugin {
 
     // Strings
     String sleepInfo = "&aSleep > &7 %percent% (%count%) out of a minimum of 25% sleeping.";
-    String nightSkip = "&aSleep > &7At least 25% of online users sleeping (%count%), skipping the night.";
+    List<String> nightSkip = List.of("&aSleep > &7At least 25% of online users sleeping (%count%), skipping the night.");
     String ignored = "&cSleep > &7You are still being ignored for sleep calculations!";
     String sleepHelpList = "&cInvalid command, valid subcommands are: ";
     String noPermission = "&cYou don't have permission for that.";
@@ -108,7 +108,12 @@ public class Main extends JavaPlugin {
         skipPercentage = config.getInt("SkipPercentage");
         skipSpeed = config.getInt("SkipSpeed");
         sleepInfo = config.getString("SleepInfo");
-        nightSkip = config.getString("NightSkip");
+        // For backwards compatibility check for both types
+        if (config.isList("NightSkip")) {
+            nightSkip = config.getStringList("NightSkip");
+        } else {
+            nightSkip = List.of(config.getString("NightSkip"));
+        }
         ignored = config.getString("Ignored");
         sleepHelpList = config.getString("SleepHelpList");
         noPermission = config.getString("NoPermission");
@@ -200,8 +205,9 @@ public class Main extends JavaPlugin {
                             player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
                         }
                         for (Player players : world.getPlayers()) {
+                            String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
                             sendMessage(players, ChatColor.translateAlternateColorCodes('&',
-                                    nightSkip.replace("%percent%", dfrmt.format(percentage) + "%")
+                                    chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
                                             .replace("%player%", player.getName())));
                         }
