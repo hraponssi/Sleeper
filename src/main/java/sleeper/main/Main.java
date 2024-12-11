@@ -204,8 +204,8 @@ public class Main extends JavaPlugin {
                         if (debugPlayers.contains(player.getUniqueId())) {
                             player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
                         }
+                        String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
                         for (Player players : world.getPlayers()) {
-                            String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
                             sendMessage(players, ChatColor.translateAlternateColorCodes('&',
                                     chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
