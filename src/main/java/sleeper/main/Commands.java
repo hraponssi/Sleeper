@@ -71,7 +71,7 @@ public class Commands implements CommandExecutor {
             			sender.sendMessage(ChatColor.RED + stateString + " is not TRUE or FALSE.");
             		} else {
             			if (stateString.equals("TRUE")) {
-            				if (plugin.ignorePlayers.contains(target.getUniqueId())) {
+            				if (!plugin.ignorePlayers.contains(target.getUniqueId())) {
             					sender.sendMessage(ChatColor.RED + targetName + " is now ignored from sleeping.");
         	                    plugin.ignorePlayers.add(target.getUniqueId());
             				} else {
