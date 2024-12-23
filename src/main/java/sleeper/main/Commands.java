@@ -23,10 +23,6 @@ public class Commands implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String command, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be run by players.");
-            return true;
-        }
         switch (cmd.getName().toLowerCase()) {
         case "sleep": // TODO: add tab completion
             if (args.length < 1) {
@@ -54,10 +50,10 @@ public class Commands implements CommandExecutor {
             			sender.sendMessage(ChatColor.RED + "Player " + targetName + " not found.");
             		} else {
             			if (plugin.ignorePlayers.contains(target.getUniqueId())) {
-    	                    sender.sendMessage(ChatColor.GREEN + targetName + " is no longer ignored from sleeping.");
+    	                    sender.sendMessage(ChatColor.GREEN + target.getName() + " is no longer ignored from sleeping.");
     	                    plugin.ignorePlayers.remove(target.getUniqueId());
     	                } else {
-    	                	sender.sendMessage(ChatColor.RED + targetName + " is now ignored from sleeping.");
+    	                	sender.sendMessage(ChatColor.RED + target.getName()+ " is now ignored from sleeping.");
     	                    plugin.ignorePlayers.add(target.getUniqueId());
     	                }
             		}
@@ -72,13 +68,13 @@ public class Commands implements CommandExecutor {
             		} else {
             			if (stateString.equals("TRUE")) {
             				if (!plugin.ignorePlayers.contains(target.getUniqueId())) {
-            					sender.sendMessage(ChatColor.RED + targetName + " is now ignored from sleeping.");
+            					sender.sendMessage(ChatColor.RED + target.getName() + " is now ignored from sleeping.");
         	                    plugin.ignorePlayers.add(target.getUniqueId());
             				} else {
-            					sender.sendMessage(ChatColor.RED + targetName + " is already ignored from sleeping.");
+            					sender.sendMessage(ChatColor.RED + target.getName() + " is already ignored from sleeping.");
             				}
             			} else {
-            				sender.sendMessage(ChatColor.GREEN + targetName + " is no longer ignored from sleeping.");
+            				sender.sendMessage(ChatColor.GREEN + target.getName() + " is no longer ignored from sleeping.");
     	                    plugin.ignorePlayers.remove(target.getUniqueId());
     	                }
             		}
