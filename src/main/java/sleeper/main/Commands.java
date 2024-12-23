@@ -1,6 +1,7 @@
 package sleeper.main;
 
 import java.util.StringJoiner;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,54 +27,89 @@ public class Commands implements CommandExecutor {
             sender.sendMessage(ChatColor.RED + "This command can only be run by players.");
             return true;
         }
-        Player player = (Player) sender;
         switch (cmd.getName().toLowerCase()) {
         case "sleep": // TODO: add tab completion
             if (args.length < 1) {
-                player.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(player)));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(sender)));
                 break;
             }
+            // Console compatible commands
+            switch (args[0].toLowerCase()) {
+            case "ignore":
+            	if (!hasPermission(sender, "sleeper.ignore")) break;
+            	if (args.length < 2) { // Self
+            		if (!isPlayer(sender)) return true;
+            		UUID uuid = ((Player) sender).getUniqueId();
+	                if (plugin.ignorePlayers.contains(uuid)) {
+	                    sender.sendMessage(ChatColor.GREEN + "You are no longer ignored from sleeping.");
+	                    plugin.ignorePlayers.remove(uuid);
+	                } else {
+	                    sender.sendMessage(ChatColor.RED + "You are now ignored from sleeping.");
+	                    plugin.ignorePlayers.add(uuid);
+	                }
+            	} else if (args.length < 3) { // Another player
+            		String targetName = args[1];
+            		Player target = Bukkit.getPlayer(targetName);
+            		if (target == null) {
+            			sender.sendMessage(ChatColor.RED + "Player " + targetName + " not found.");
+            		} else {
+            			if (plugin.ignorePlayers.contains(target.getUniqueId())) {
+    	                    sender.sendMessage(ChatColor.GREEN + targetName + " is no longer ignored from sleeping.");
+    	                    plugin.ignorePlayers.remove(target.getUniqueId());
+    	                } else {
+    	                	sender.sendMessage(ChatColor.RED + targetName + " is now ignored from sleeping.");
+    	                    plugin.ignorePlayers.add(target.getUniqueId());
+    	                }
+            			plugin.ignorePlayers.add(target.getUniqueId());
+            		}
+            	} else { // Another player, and a specific state true or false
+            		String targetName = args[1];
+            		String stateString = args[2].toUpperCase();
+            		Player target = Bukkit.getPlayer(targetName);
+            		if (target == null) {
+            			sender.sendMessage(ChatColor.RED + "Player " + targetName + " not found.");
+            		} else if (!stateString.equals("TRUE") && !stateString.equals("FALSE")) {
+            			sender.sendMessage(ChatColor.RED + stateString + " is not TRUE or FALSE.");
+            		} else {
+            			if (stateString.equals("TRUE")) {
+            				if (plugin.ignorePlayers.contains(target.getUniqueId())) {
+            					sender.sendMessage(ChatColor.RED + targetName + " is now ignored from sleeping.");
+        	                    plugin.ignorePlayers.add(target.getUniqueId());
+            				} else {
+            					sender.sendMessage(ChatColor.RED + targetName + " is already ignored from sleeping.");
+            				}
+            			} else {
+            				sender.sendMessage(ChatColor.GREEN + targetName + " is no longer ignored from sleeping.");
+    	                    plugin.ignorePlayers.remove(target.getUniqueId());
+    	                }
+            		}
+            	}
+                break;
+            case "reload":
+            	if (!hasPermission(sender, "sleeper.reload")) break;
+                plugin.loadConfig();
+                sender.sendMessage(ChatColor.GREEN + "Sleep config reloaded.");
+                break;
+            }
+            if (!isPlayer(sender)) return true;
+            // Player only commands
+            Player player = (Player) sender;
             switch (args[0].toLowerCase()) {
             case "yes":
-            	if (!player.hasPermission("sleeper.vote")) {
-            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
-            		break;
-            	}
+            	if (!hasPermission(player, "sleeper.vote")) break;
             	voting.voteYes(player);
                 break;
             case "no":
-            	if (!player.hasPermission("sleeper.vote")) {
-            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
-            		break;
-            	}
+            	if (!hasPermission(player, "sleeper.vote")) break;
             	voting.voteNo(player);
                 break;
             case "votes":
-            	if (!player.hasPermission("sleeper.vote")) {
-            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
-            		break;
-            	}
+            	if (!hasPermission(player, "sleeper.vote")) break;
             	voting.showVotes(player);
                 break;
             // TODO: Add a command to list ignored players?
-            case "ignore":
-            	if (!player.hasPermission("sleeper.ignore")) {
-            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
-            		break;
-            	}
-                if (plugin.ignorePlayers.contains(player.getUniqueId())) {
-                    player.sendMessage(ChatColor.GREEN + "You are no longer ignored from sleeping");
-                    plugin.ignorePlayers.remove(player.getUniqueId());
-                } else {
-                    player.sendMessage(ChatColor.RED + "You are now ignored from sleeping");
-                    plugin.ignorePlayers.add(player.getUniqueId());
-                }
-                break;
             case "debug": // A bunch of debug data
-            	if (!player.hasPermission("sleeper.data")) {
-            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
-            		break;
-            	}
+            	if (!hasPermission(sender, "sleeper.data")) break;
                 if (plugin.debugPlayers.contains(player.getUniqueId())) {
                     player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Debug disabled");
                     plugin.debugPlayers.remove(player.getUniqueId());
@@ -101,27 +137,35 @@ public class Commands implements CommandExecutor {
                 player.sendMessage(ChatColor.GREEN + "Ignoring players: ");
                 plugin.getOnlineIgnorers().forEach(p -> player.sendMessage(ChatColor.GRAY + p.getDisplayName()));
                 break;
-            case "reload":
-            	if (!player.hasPermission("sleeper.reload")) {
-            		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
-            		break;
-            	}
-                plugin.loadConfig();
-                player.sendMessage(ChatColor.GREEN + "Sleep config reloaded.");
-                break;
             default:
-                player.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(player)));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(player)));
                 break;
             }
             break;
         default:
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(player)));
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(sender)));
             break;
         }
         return true;
     }
     
-    private String playerHelpMsg(Player player) {
+    private boolean isPlayer(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.RED + "This command can only be run by players.");
+            return false;
+        }
+        return true;
+    }
+    
+    private boolean hasPermission(CommandSender player, String permission) {
+    	if (!player.hasPermission(permission)) {
+    		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
+    		return false;
+    	}
+    	return true;
+    }
+    
+    private String playerHelpMsg(CommandSender player) {
         StringJoiner builder = new StringJoiner(", ");
         if (player.hasPermission("sleeper.vote")) {
             builder.add("yes, no, votes");
