@@ -60,7 +60,6 @@ public class Commands implements CommandExecutor {
     	                	sender.sendMessage(ChatColor.RED + targetName + " is now ignored from sleeping.");
     	                    plugin.ignorePlayers.add(target.getUniqueId());
     	                }
-            			plugin.ignorePlayers.add(target.getUniqueId());
             		}
             	} else { // Another player, and a specific state true or false
             		String targetName = args[1];
@@ -84,12 +83,12 @@ public class Commands implements CommandExecutor {
     	                }
             		}
             	}
-                break;
+                return true;
             case "reload":
             	if (!hasPermission(sender, "sleeper.reload")) break;
                 plugin.loadConfig();
                 sender.sendMessage(ChatColor.GREEN + "Sleep config reloaded.");
-                break;
+                return true;
             }
             if (!isPlayer(sender)) return true;
             // Player only commands
