@@ -27,6 +27,7 @@ public class Voting {
     
     // Vote variables
     ArrayList<String> votingWorlds = new ArrayList<>();
+    HashMap<String, Integer> votingWorldTimes = new HashMap<>();
     HashMap<String, String> yesVotes = new HashMap<>();
     HashMap<String, String> noVotes = new HashMap<>();
     
@@ -39,6 +40,8 @@ public class Voting {
     boolean bossbarVoteCount = true;
     boolean sendVotesOnStart = true;
     boolean voteStarts = false;
+    int maxVoteTime = 60;
+    boolean limitedVoteTime = false;
     
     // Message Strings
     String voteTitle = "&aSleep > &7Vote below on skipping the night:";
@@ -52,6 +55,7 @@ public class Voting {
     String listVotes = "&aYes: &7%yes% &cNo: &7%no%";
     String skipByVote = "&aSleep > &7The vote has decided to skip the night!";
     String voteNotEnabled = "&cVoting is not enabled.";
+    String voteTimedOut = "&aSleep > &cThe vote ended without skipping the night.";
     
     public void startVote(Player player) {
         World world = player.getWorld();
@@ -59,6 +63,7 @@ public class Voting {
         plugin.onlinePlayers(pWorld); // Update listed count of online players for the world
         if (!votingWorlds.contains(pWorld) && world.getTime() >= 12542) { // Bukkit doesn't have chatcomponent, don't use it
             votingWorlds.add(pWorld);
+            if (limitedVoteTime) votingWorldTimes.put(pWorld, maxVoteTime*20); // Config time in seconds but var in ticks
             // Send vote message to world
             if (sendVotesOnStart) world.getPlayers().forEach(wPlayer -> sendVoteMsg(wPlayer));
         } else if (world.getTime() >= 12542) { // If a vote is ongoing send just the sleeper the menu
@@ -162,6 +167,23 @@ public class Voting {
         return (yesVotes.containsKey(player.getName()) || noVotes.containsKey(player.getName()));
     }
     
+    public void endVote(String worldName) {
+        votingWorlds.remove(worldName);
+        plugin.bar.removeAll();
+        // Clear votes from that world
+        ArrayList<String> removeVotes = new ArrayList<>();
+        for (Entry<String, String> vote : yesVotes.entrySet()) {
+            if (vote.getValue().equals(worldName)) removeVotes.add(vote.getKey());
+        }
+        removeVotes.forEach(name -> yesVotes.remove(name));
+        removeVotes.clear();
+        for (Entry<String, String> vote : noVotes.entrySet()) {
+            if (vote.getValue().equals(worldName)) removeVotes.add(vote.getKey());
+        }
+        removeVotes.forEach(name -> noVotes.remove(name));
+        removeVotes.clear();
+    }
+    
     public void tick() {
         for (String worldName : new ArrayList<String>(votingWorlds)) {
             World world = Bukkit.getWorld(worldName);
@@ -176,21 +198,19 @@ public class Voting {
                     plugin.bar.addPlayer(player);
                 }
             }
+            if (votingWorldTimes.containsKey(worldName)) {
+                int timeLeft = votingWorldTimes.get(worldName)-1;
+                // If time ran out end the vote
+                if (timeLeft <= 0) {
+                    votingWorldTimes.remove(worldName);
+                    world.getPlayers().forEach(
+                            player -> plugin.sendMessage(player, ChatColor.translateAlternateColorCodes('&', voteTimedOut)));
+                    endVote(worldName);
+                }
+                votingWorldTimes.replace(worldName, timeLeft);
+            }
             if (time < 2000) { // End vote, day time.
-                votingWorlds.remove(worldName);
-                plugin.bar.removeAll();
-                // Clear votes from that world
-                ArrayList<String> removeVotes = new ArrayList<>();
-                for (Entry<String, String> vote : yesVotes.entrySet()) {
-                    if (vote.getValue().equals(worldName)) removeVotes.add(vote.getKey());
-                }
-                removeVotes.forEach(name -> yesVotes.remove(name));
-                removeVotes.clear();
-                for (Entry<String, String> vote : noVotes.entrySet()) {
-                    if (vote.getValue().equals(worldName)) removeVotes.add(vote.getKey());
-                }
-                removeVotes.forEach(name -> noVotes.remove(name));
-                removeVotes.clear();
+                endVote(worldName);
             } else { // Check if the votes are enough for a skip
                 int yVotes = countYes(worldName);
                 int nVotes = countNo(worldName);
@@ -228,6 +248,9 @@ public class Voting {
         bossbarVoteCount = config.getBoolean("BossbarVoteCount");
         sendVotesOnStart = config.getBoolean("SendVotesOnStart");
         voteStarts = config.getBoolean("StartWithoutSleep");
+        maxVoteTime = config.getInt("MaxVoteTime");
+        limitedVoteTime = config.getBoolean("LimitedVoteTime");
+        voteTimedOut = config.getString("VoteTimedOut");
     }
     
 }

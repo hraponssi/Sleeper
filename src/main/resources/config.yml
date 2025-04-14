@@ -17,6 +17,8 @@ BlockBedsAfterVoting: false
 BossbarVoteCount: true
 SendVotesOnStart: true
 StartWithoutSleep: false
+MaxVoteTime: 60
+LimitedVoteTime: false
 
 #Messages
 SleepInfo: "&aSleep > &7%percent% (%count%) out of a minimum of 25% sleeping."
@@ -36,3 +38,4 @@ SleepHelpList: "&cInvalid command, valid subcommands are: "
 NoPermission: "&cYou don't have permission for that."
 ListVotes: "&7Votes: &aYes: &7%yes% &cNo: &7%no%"
 SkipByVote: "&aSleep > &7The vote has decided to skip the night!"
+VoteTimedOut: "&aSleep > &cThe vote ended without skipping the night."
