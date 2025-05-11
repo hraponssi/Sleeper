@@ -81,7 +81,7 @@
 					<relocations>
 						<relocation>
 							<pattern>org.bstats</pattern>
-							<shadedPattern>net.hraponssi.sleeper</shadedPattern>
+							<shadedPattern>sleeper.bstats</shadedPattern>
 						</relocation>
 					</relocations>
 				</configuration>
