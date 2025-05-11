@@ -157,6 +157,7 @@ public class Main extends JavaPlugin {
                     wsleeping++;
                     sleepingWorlds.put(pWorld, wsleeping);
                     float percentage = (wsleeping / wonline) * 100;
+                    int countNeeded =  (int) Math.ceil(wonline*(skipPercentage/100d));
                     // Replace e.g. infinity percentage with 100%, if ignored players slept
                     if (percentage > 100) percentage = 100;
                     // Debug
@@ -178,12 +179,14 @@ public class Main extends JavaPlugin {
                         sendMessage(player, ChatColor.translateAlternateColorCodes('&',
                                 sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                         .replace("%count%", dfrmt.format(wsleeping))
+                                        .replace("%count_needed%", dfrmt.format(countNeeded))
                                         .replace("%player%", player.getName())));
                     } else { // Tell everyone in the world
                         for (Player players : world.getPlayers()) {
                             sendMessage(players, ChatColor.translateAlternateColorCodes('&',
                                     sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
+                                            .replace("%count_needed%", dfrmt.format(countNeeded))
                                             .replace("%player%", player.getName())));
                         }
                     }
@@ -209,6 +212,7 @@ public class Main extends JavaPlugin {
                             sendMessage(players, ChatColor.translateAlternateColorCodes('&',
                                     chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
+                                            .replace("%count_needed%", dfrmt.format(countNeeded))
                                             .replace("%player%", player.getName())));
                         }
                         skipping.add(pWorld);
