@@ -2,6 +2,7 @@ package sleeper.main;
 
 import java.text.DecimalFormat;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,6 +11,7 @@ import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitScheduler;
 
 public class EventHandlers implements Listener {
     DecimalFormat dfrmt = new DecimalFormat();
@@ -27,12 +29,17 @@ public class EventHandlers implements Listener {
     @EventHandler
     public void onBedEnter(PlayerBedEnterEvent event) {
         Player player = event.getPlayer();
-        if(voting.blockBedsAfterVoting && voting.votingWorlds.contains(player.getWorld().getName()) && voting.hasVoted(player)) {
-            event.setCancelled(true);
-            voting.voteYes(player);
-            return;
-        }
-        plugin.sleep(player);
+        BukkitScheduler scheduler = Bukkit.getScheduler();
+        // Delay sleep if configured to do so
+        scheduler.runTaskLater(plugin, () -> {
+            if (!player.isSleeping()) return;
+            if (voting.blockBedsAfterVoting && voting.votingWorlds.contains(player.getWorld().getName()) && voting.hasVoted(player)) {
+                event.setCancelled(true);
+                voting.voteYes(player);
+                return;
+            }
+            plugin.sleep(player);
+        }, 20L * plugin.delaySeconds);
     }
 
     @EventHandler

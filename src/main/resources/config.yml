@@ -4,6 +4,8 @@
 UseAnimation: true
 SkipPercentage: 25
 SkipSpeed: 100
+DelaySleep: false
+DelaySeconds: 4
 
 #Other settings
 BroadcastSleepInfo: false

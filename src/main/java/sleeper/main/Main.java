@@ -40,7 +40,9 @@ public class Main extends JavaPlugin {
     int skipPercentage = 25;
     int skipSpeed = 100;
     boolean broadcastSleepInfo = false;
-
+    boolean delaySleep = false;
+    long delaySeconds = 0;
+    
     // Variables
     ArrayList<String> skipping = new ArrayList<>();
     ArrayList<String> recentlySkipped = new ArrayList<>();
@@ -118,6 +120,11 @@ public class Main extends JavaPlugin {
         sleepHelpList = config.getString("SleepHelpList");
         noPermission = config.getString("NoPermission");
         broadcastSleepInfo = config.getBoolean("BroadcastSleepInfo");
+        delaySeconds = config.getLong("DelaySeconds");
+        delaySleep = config.getBoolean("DelaySleep");
+        if (!delaySleep) {
+            delaySeconds = 0;
+        }
         voting.loadConfig(config);
     }
 
