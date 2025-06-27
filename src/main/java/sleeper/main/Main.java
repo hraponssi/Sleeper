@@ -43,6 +43,8 @@ public class Main extends JavaPlugin {
     boolean delaySleep = false;
     long delaySeconds = 0;
     
+    boolean checkUpdates = true;
+    
     // Variables
     ArrayList<String> skipping = new ArrayList<>();
     ArrayList<String> recentlySkipped = new ArrayList<>();
@@ -124,8 +126,10 @@ public class Main extends JavaPlugin {
         if (!delaySleep) {
             delaySeconds = 0;
         }
+        checkUpdates = config.getBoolean("CheckForUpdates");
         voting.loadConfig(config);
         commands.loadConfig(config);
+        if (checkUpdates) updateChecker();
     }
 
     public void setConfig() {
@@ -143,6 +147,14 @@ public class Main extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public void updateChecker() {
+    	new UpdateChecker(this, 102406).getVersion(version -> {
+            if (!this.getDescription().getVersion().equals(version)) {
+                getLogger().warning("There is a new update available. New version is " + version + " and you are on " + this.getDescription().getVersion() + ".");
+            }
+        });
     }
     
     // Message sending system to allow skipping sending blank messages

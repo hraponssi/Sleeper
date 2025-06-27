@@ -1,5 +1,8 @@
 # Default config for Sleeper
 
+# Plugin settings
+CheckForUpdates: true
+
 # Main settings
 UseAnimation: true
 SkipPercentage: 25
