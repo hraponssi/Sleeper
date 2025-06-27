@@ -75,6 +75,7 @@ public class Main extends JavaPlugin {
         eventhandlers = new EventHandlers(this, voting);
         commands = new Commands(this, voting);
         getCommand("sleep").setExecutor(commands);
+        getCommand("sleep").setTabCompleter(new CommandCompletion());
         pm.registerEvents(eventhandlers, this);
         setConfig();
         loadConfig();

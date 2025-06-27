@@ -24,7 +24,7 @@ public class Commands implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String command, String[] args) {
         switch (cmd.getName().toLowerCase()) {
-        case "sleep": // TODO: add tab completion
+        case "sleep":
             if (args.length < 1) {
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(sender)));
                 break;
