@@ -57,7 +57,6 @@ public class Main extends JavaPlugin {
     String sleepInfo = "&aSleep > &7 %percent% (%count%) out of a minimum of 25% sleeping.";
     List<String> nightSkip = List.of("&aSleep > &7At least 25% of online users sleeping (%count%), skipping the night.");
     String ignored = "&cSleep > &7You are still being ignored for sleep calculations!";
-    String sleepHelpList = "&cInvalid command, valid subcommands are: ";
     String noPermission = "&cYou don't have permission for that.";
 
     public void onDisable() {
@@ -118,7 +117,6 @@ public class Main extends JavaPlugin {
             nightSkip = List.of(config.getString("NightSkip"));
         }
         ignored = config.getString("Ignored");
-        sleepHelpList = config.getString("SleepHelpList");
         noPermission = config.getString("NoPermission");
         broadcastSleepInfo = config.getBoolean("BroadcastSleepInfo");
         delaySeconds = config.getLong("DelaySeconds");
@@ -127,6 +125,7 @@ public class Main extends JavaPlugin {
             delaySeconds = 0;
         }
         voting.loadConfig(config);
+        commands.loadConfig(config);
     }
 
     public void setConfig() {

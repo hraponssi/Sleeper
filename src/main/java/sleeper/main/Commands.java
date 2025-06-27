@@ -9,12 +9,24 @@ import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 public class Commands implements CommandExecutor {
     Main plugin;
     Voting voting;
 
+    String msgPlayerNotFound = "&c%player% not found.";
+    String msgSelfIgnoreOff = "&aYou are no longer ignored from sleeping.";
+    String msgSelfIgnoreOn = "&cYou are now ignored from sleeping.";
+    String msgOtherIgnoreOff = "&a%player% is no longer ignored from sleeping.";
+    String msgOtherIgnoreOn = "&c%player% is now ignored from sleeping.";
+    String msgOtherAlreadyIgnored = "&c%player% is already ignored from sleeping.";
+    String msgInvalidState = "&c%input% is not TRUE or FALSE.";
+    String msgConfigReloaded = "&aSleep config reloaded.";
+    String msgOnlyPlayers = "&cThis command can only be run by players.";
+    String sleepHelpList = "&cInvalid command, valid subcommands are: ";
+    
     public Commands(Main plugin, Voting voting) {
         super();
         this.plugin = plugin;
@@ -37,23 +49,23 @@ public class Commands implements CommandExecutor {
             		if (!isPlayer(sender)) return true;
             		UUID uuid = ((Player) sender).getUniqueId();
 	                if (plugin.ignorePlayers.contains(uuid)) {
-	                    sender.sendMessage(ChatColor.GREEN + "You are no longer ignored from sleeping.");
+	                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgSelfIgnoreOff));
 	                    plugin.ignorePlayers.remove(uuid);
 	                } else {
-	                    sender.sendMessage(ChatColor.RED + "You are now ignored from sleeping.");
+	                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgSelfIgnoreOn));
 	                    plugin.ignorePlayers.add(uuid);
 	                }
             	} else if (args.length < 3) { // Another player
             		String targetName = args[1];
             		Player target = Bukkit.getPlayer(targetName);
             		if (target == null) {
-            			sender.sendMessage(ChatColor.RED + "Player " + targetName + " not found.");
+            			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgPlayerNotFound.replaceAll("%player%", targetName)));
             		} else {
             			if (plugin.ignorePlayers.contains(target.getUniqueId())) {
-    	                    sender.sendMessage(ChatColor.GREEN + target.getName() + " is no longer ignored from sleeping.");
+            				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOtherIgnoreOff.replaceAll("%player%", target.getName())));
     	                    plugin.ignorePlayers.remove(target.getUniqueId());
     	                } else {
-    	                	sender.sendMessage(ChatColor.RED + target.getName()+ " is now ignored from sleeping.");
+    	                	sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOtherIgnoreOn.replaceAll("%player%", target.getName())));
     	                    plugin.ignorePlayers.add(target.getUniqueId());
     	                }
             		}
@@ -62,19 +74,19 @@ public class Commands implements CommandExecutor {
             		String stateString = args[2].toUpperCase();
             		Player target = Bukkit.getPlayer(targetName);
             		if (target == null) {
-            			sender.sendMessage(ChatColor.RED + "Player " + targetName + " not found.");
+            			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgPlayerNotFound.replaceAll("%player%", targetName)));
             		} else if (!stateString.equals("TRUE") && !stateString.equals("FALSE")) {
-            			sender.sendMessage(ChatColor.RED + stateString + " is not TRUE or FALSE.");
+            			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgInvalidState.replaceAll("%input%", stateString)));
             		} else {
             			if (stateString.equals("TRUE")) {
             				if (!plugin.ignorePlayers.contains(target.getUniqueId())) {
-            					sender.sendMessage(ChatColor.RED + target.getName() + " is now ignored from sleeping.");
+            					sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOtherIgnoreOn.replaceAll("%player%", target.getName())));
         	                    plugin.ignorePlayers.add(target.getUniqueId());
             				} else {
-            					sender.sendMessage(ChatColor.RED + target.getName() + " is already ignored from sleeping.");
+            					sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOtherAlreadyIgnored.replaceAll("%player%", target.getName())));
             				}
             			} else {
-            				sender.sendMessage(ChatColor.GREEN + target.getName() + " is no longer ignored from sleeping.");
+            				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOtherIgnoreOff.replaceAll("%player%", target.getName())));
     	                    plugin.ignorePlayers.remove(target.getUniqueId());
     	                }
             		}
@@ -83,7 +95,7 @@ public class Commands implements CommandExecutor {
             case "reload":
             	if (!hasPermission(sender, "sleeper.reload")) break;
                 plugin.loadConfig();
-                sender.sendMessage(ChatColor.GREEN + "Sleep config reloaded.");
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgConfigReloaded));
                 return true;
             }
             if (!isPlayer(sender)) return true;
@@ -146,7 +158,7 @@ public class Commands implements CommandExecutor {
     
     private boolean isPlayer(CommandSender sender) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be run by players.");
+        	sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOnlyPlayers));
             return false;
         }
         return true;
@@ -177,7 +189,20 @@ public class Commands implements CommandExecutor {
             builder.add("reload");
         }
         
-        return plugin.sleepHelpList + builder.toString();
+        return sleepHelpList + builder.toString();
+    }
+    
+    public void loadConfig(FileConfiguration config) {
+    	msgPlayerNotFound = config.getString("PlayerNotFound");
+    	msgSelfIgnoreOff = config.getString("SelfIgnoreOff");
+    	msgSelfIgnoreOn = config.getString("SelfIgnoreOn");
+    	msgOtherIgnoreOff = config.getString("OtherIgnoreOff");
+    	msgOtherIgnoreOn = config.getString("OtherIgnoreOn");
+    	msgOtherAlreadyIgnored = config.getString("OtherAlreadyIgnored");
+    	msgInvalidState = config.getString("InvalidState");
+        msgConfigReloaded = config.getString("ConfigReloaded");
+        msgOnlyPlayers = config.getString("OnlyPlayers");
+        sleepHelpList = config.getString("SleepHelpList");
     }
     
 }
