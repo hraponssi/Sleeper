@@ -12,7 +12,7 @@ import org.bukkit.util.StringUtil;
 public class CommandCompletion implements TabCompleter {
 
 	@Override
-	public List<String> onTabComplete(CommandSender sender, Command command, String commandLable, String[] args){
+	public List<String> onTabComplete(CommandSender sender, Command command, String commandLable, String[] args) {
 		List<String> completions = new ArrayList<>();
 		if (args.length == 1) {
 			if (sender.hasPermission("sleeper.ignore")) completions.add("ignore");
@@ -21,14 +21,14 @@ public class CommandCompletion implements TabCompleter {
 			if (sender.hasPermission("sleeper.vote")) completions.add("no");
 			if (sender.hasPermission("sleeper.vote")) completions.add("votes");
 			return StringUtil.copyPartialMatches(args[0], completions, new ArrayList<>());
-		} else if(args.length == 2){
-			if(args[0].equalsIgnoreCase("ignore")) {
+		} else if (args.length == 2) {
+			if (args[0].equalsIgnoreCase("ignore")) {
 				List<String> names = Bukkit.getOnlinePlayers().stream().map(player -> player.getName()).toList();
 				if (sender.hasPermission("sleeper.ignore")) completions.addAll(names);
 			}
 			return StringUtil.copyPartialMatches(args[1], completions, new ArrayList<>());
-		} else if(args.length == 3){
-			if(args[0].equalsIgnoreCase("ignore")) {
+		} else if (args.length == 3) {
+			if (args[0].equalsIgnoreCase("ignore")) {
 				if (sender.hasPermission("sleeper.ignore")) completions.add("TRUE");
 				if (sender.hasPermission("sleeper.ignore")) completions.add("FALSE");
 			}
@@ -36,5 +36,5 @@ public class CommandCompletion implements TabCompleter {
 		}
 		return null;
 	}
-	
+
 }
