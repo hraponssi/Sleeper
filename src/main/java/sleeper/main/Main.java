@@ -38,7 +38,6 @@ public class Main extends JavaPlugin {
 
     // Setting values
     boolean useAnimation = true;
-    boolean broadcastNightSkip = true;
     int skipPercentage = 25;
     int skipSpeed = 100;
     boolean broadcastSleepInfo = false;
@@ -112,7 +111,6 @@ public class Main extends JavaPlugin {
         reloadConfig();
         FileConfiguration config = this.getConfig();
         useAnimation = config.getBoolean("UseAnimation");
-        broadcastNightSkip = config.getBoolean("BroadcastNightSkip");
         skipPercentage = config.getInt("SkipPercentage");
         skipSpeed = config.getInt("SkipSpeed");
         sleepInfo = config.getString("SleepInfo");
@@ -232,16 +230,13 @@ public class Main extends JavaPlugin {
                             player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
                         }
                         
-                        if (broadcastNightSkip)
-                        {
-                            String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
-                            for (Player players : world.getPlayers()) {
-                                sendMessage(players, messageFormatting.parseMessage(
-                                        chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
-                                                .replace("%count%", dfrmt.format(wsleeping))
-                                                .replace("%count_needed%", dfrmt.format(countNeeded))
-                                                .replace("%player%", player.getName())));
-                            }
+                        String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
+                        for (Player players : world.getPlayers()) {
+                            sendMessage(players, messageFormatting.parseMessage(
+                                    chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
+                                            .replace("%count%", dfrmt.format(wsleeping))
+                                            .replace("%count_needed%", dfrmt.format(countNeeded))
+                                            .replace("%player%", player.getName())));
                         }
                         
                         skipping.add(pWorld);
