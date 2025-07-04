@@ -200,14 +200,14 @@ public class Main extends JavaPlugin {
                     }
                     // Sleepinfo message
                     if (!broadcastSleepInfo) {
-                        sendMessage(player, ChatColor.translateAlternateColorCodes('&',
+                        sendMessage(player, messageFormatting.parseMessage(
                                 sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                         .replace("%count%", dfrmt.format(wsleeping))
                                         .replace("%count_needed%", dfrmt.format(countNeeded))
                                         .replace("%player%", player.getName())));
                     } else { // Tell everyone in the world
                         for (Player players : world.getPlayers()) {
-                            sendMessage(players, ChatColor.translateAlternateColorCodes('&',
+                            sendMessage(players, messageFormatting.parseMessage(
                                     sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
                                             .replace("%count_needed%", dfrmt.format(countNeeded))
@@ -236,7 +236,7 @@ public class Main extends JavaPlugin {
                         {
                             String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
                             for (Player players : world.getPlayers()) {
-                                sendMessage(players, ChatColor.translateAlternateColorCodes('&',
+                                sendMessage(players, messageFormatting.parseMessage(
                                         chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
                                                 .replace("%count%", dfrmt.format(wsleeping))
                                                 .replace("%count_needed%", dfrmt.format(countNeeded))
