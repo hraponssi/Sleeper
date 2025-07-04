@@ -41,6 +41,7 @@ public class Main extends JavaPlugin {
     boolean broadcastNightSkip = true;
     int skipPercentage = 25;
     int skipSpeed = 100;
+    boolean sendSleepInfo = true; // as opposed to Broadcast, regulates whether SleepInfo should be sent at all?
     boolean broadcastSleepInfo = false;
     boolean delaySleep = false;
     long delaySeconds = 0;
@@ -124,6 +125,7 @@ public class Main extends JavaPlugin {
         }
         ignored = config.getString("Ignored");
         noPermission = config.getString("NoPermission");
+        sendSleepInfo = config.getBoolean("SendSleepInfo");
         broadcastSleepInfo = config.getBoolean("BroadcastSleepInfo");
         delaySeconds = config.getLong("DelaySeconds");
         delaySleep = config.getBoolean("DelaySleep");
@@ -199,13 +201,13 @@ public class Main extends JavaPlugin {
                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "voting: " + voting.votingWorlds.toString());
                     }
                     // Sleepinfo message
-                    if (!broadcastSleepInfo) {
+                    if (!broadcastSleepInfo && sendSleepInfo) {
                         sendMessage(player, messageFormatting.parseMessage(
                                 sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                         .replace("%count%", dfrmt.format(wsleeping))
                                         .replace("%count_needed%", dfrmt.format(countNeeded))
                                         .replace("%player%", player.getName())));
-                    } else { // Tell everyone in the world
+                    } else if (sendSleepInfo) { // Tell everyone in the world
                         for (Player players : world.getPlayers()) {
                             sendMessage(players, messageFormatting.parseMessage(
                                     sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
