@@ -4,10 +4,9 @@
 CheckForUpdates: true
 
 # Available serializers:
-# legacy_ampersand - "&c&lExample Text"
-# legacy_section - "§c§lExample Text"
+# minecraft - "&c&lExample Text"
 # minimessage - "<red><bold>Example Text"
-FormattingType: "legacy_ampersand"
+FormattingType: "minecraft"
 
 # Main settings
 UseAnimation: true
