@@ -17,7 +17,6 @@ DelaySleep: false
 DelaySeconds: 4
 
 # Other settings
-BroadcastNightSkip: false
 BroadcastSleepInfo: false
 
 # Voting system, a night is skipped based on yes votes minus no votes
