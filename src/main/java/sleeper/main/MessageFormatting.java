@@ -39,7 +39,7 @@ public class MessageFormatting {
     
     public void loadConfig(FileConfiguration config) {
     	String configFormattingType = config.getString("FormattingType");
-        if (allowedTypes.contains(configFormattingType.toUpperCase()))
+        if (configFormattingType != null && allowedTypes.contains(configFormattingType.toUpperCase()))
             formattingType = configFormattingType.toUpperCase();
         else
         {
