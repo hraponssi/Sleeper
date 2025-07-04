@@ -18,25 +18,25 @@ import net.md_5.bungee.api.chat.TextComponent;
 public class Voting {
 
     Main plugin;
-    
+
     MessageFormatting messageFormatting;
 
     DecimalFormat dfrmt = new DecimalFormat();
-    
+
     public Voting(Main plugin, MessageFormatting messageFormatting) {
         this.plugin = plugin;
         this.messageFormatting = messageFormatting;
         dfrmt.setMaximumFractionDigits(2);
     }
-    
+
     // Vote variables
     ArrayList<String> votingWorlds = new ArrayList<>();
     HashMap<String, Integer> votingWorldTimes = new HashMap<>();
     HashMap<String, String> yesVotes = new HashMap<>();
     HashMap<String, String> noVotes = new HashMap<>();
-    
+
     private int tickCounter = 0;
-    
+
     // Voting setting values
     boolean useVote = false;
     int yesMultiplier = 1;
@@ -49,7 +49,7 @@ public class Voting {
     boolean voteStarts = false;
     int maxVoteTime = 60;
     boolean limitedVoteTime = false;
-    
+
     // Message Strings
     String voteTitle = "&aSleep > &7Vote below on skipping the night:";
     String voteYes = "&a&lYes";
@@ -63,14 +63,14 @@ public class Voting {
     String skipByVote = "&aSleep > &7The vote has decided to skip the night!";
     String voteNotEnabled = "&cVoting is not enabled.";
     String voteTimedOut = "&aSleep > &cThe vote ended without skipping the night.";
-    
+
     public void startVote(Player player) {
         World world = player.getWorld();
         String pWorld = world.getName();
         plugin.onlinePlayers(pWorld); // Update listed count of online players for the world
         if (!votingWorlds.contains(pWorld) && world.getTime() >= 12542) { // Bukkit doesn't have chatcomponent, don't use it
             votingWorlds.add(pWorld);
-            if (limitedVoteTime) votingWorldTimes.put(pWorld, maxVoteTime*20); // Config time in seconds but var in ticks
+            if (limitedVoteTime) votingWorldTimes.put(pWorld, maxVoteTime * 20); // Config time in seconds but var in ticks
             // Send vote message to world
             if (sendVotesOnStart) world.getPlayers().forEach(wPlayer -> sendVoteMsg(wPlayer));
         } else if (world.getTime() >= 12542) { // If a vote is ongoing send just the sleeper the menu
@@ -165,15 +165,15 @@ public class Voting {
     }
 
     public void showVotes(Player player) {
-        player.sendMessage(messageFormatting.parseMessage(
-                listVotes.replace("%yes%", dfrmt.format(countYes(player.getWorld().getName()))).replace("%no%",
-                        dfrmt.format(countNo(player.getWorld().getName())))));
+        player.sendMessage(messageFormatting
+                .parseMessage(listVotes.replace("%yes%", dfrmt.format(countYes(player.getWorld().getName())))
+                        .replace("%no%", dfrmt.format(countNo(player.getWorld().getName())))));
     }
 
     public boolean hasVoted(Player player) {
         return (yesVotes.containsKey(player.getName()) || noVotes.containsKey(player.getName()));
     }
-    
+
     public void endVote(String worldName) {
         votingWorlds.remove(worldName);
         plugin.bar.removeAll();
@@ -190,16 +190,16 @@ public class Voting {
         removeVotes.forEach(name -> noVotes.remove(name));
         removeVotes.clear();
     }
-    
+
     public void tick() {
         for (String worldName : new ArrayList<String>(votingWorlds)) {
             World world = Bukkit.getWorld(worldName);
             long time = world.getTime();
             if (plugin.skipping.contains(worldName)) continue;
             if (bossbarVoteCount) {
-                plugin.bar.setTitle(messageFormatting.parseMessage(
-                        listVotes.replace("%yes%", dfrmt.format(countYes(worldName))).replace("%no%",
-                                dfrmt.format(countNo(worldName)))));
+                plugin.bar.setTitle(
+                        messageFormatting.parseMessage(listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
+                                .replace("%no%", dfrmt.format(countNo(worldName)))));
                 for (Player player : world.getPlayers()) {
                     if (plugin.bar.getPlayers().contains(player)) continue;
                     plugin.bar.addPlayer(player);
@@ -209,13 +209,14 @@ public class Voting {
                 tickCounter++;
                 if (tickCounter % 20 != 0) return;
                 for (Player player : world.getPlayers()) {
-                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(messageFormatting.parseMessage(
-                        listVotes.replace("%yes%", dfrmt.format(countYes(worldName))).replace("%no%",
-                                dfrmt.format(countNo(worldName))))));
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                            TextComponent.fromLegacyText(messageFormatting
+                                    .parseMessage(listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
+                                            .replace("%no%", dfrmt.format(countNo(worldName))))));
                 }
             }
             if (votingWorldTimes.containsKey(worldName)) {
-                int timeLeft = votingWorldTimes.get(worldName)-1;
+                int timeLeft = votingWorldTimes.get(worldName) - 1;
                 // If time ran out end the vote
                 if (timeLeft <= 0) {
                     votingWorldTimes.remove(worldName);
@@ -236,14 +237,14 @@ public class Voting {
                 if (skipFactor >= skipMargin) {
                     plugin.skipping.add(worldName);
                     plugin.recentlySkipped.add(worldName);
-                    world.getPlayers().forEach(
-                            player -> plugin.sendMessage(player, messageFormatting.parseMessage(skipByVote)));
+                    world.getPlayers()
+                            .forEach(player -> plugin.sendMessage(player, messageFormatting.parseMessage(skipByVote)));
                     plugin.getLogger().info("Skipping night by vote in " + worldName);
                 }
             }
         }
     }
-    
+
     public void loadConfig(FileConfiguration config) {
         useVote = config.getBoolean("VoteSkip");
         yesMultiplier = config.getInt("YesMultiplier");
@@ -269,5 +270,5 @@ public class Voting {
         limitedVoteTime = config.getBoolean("LimitedVoteTime");
         voteTimedOut = config.getString("VoteTimedOut");
     }
-    
+
 }
