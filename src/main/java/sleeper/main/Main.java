@@ -28,6 +28,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin { 
+    MessageFormatting messageFormatting;
     Voting voting;
     EventHandlers eventhandlers;
     Commands commands;
@@ -37,6 +38,7 @@ public class Main extends JavaPlugin {
 
     // Setting values
     boolean useAnimation = true;
+    boolean broadcastNightSkip = true;
     int skipPercentage = 25;
     int skipSpeed = 100;
     boolean broadcastSleepInfo = false;
@@ -72,9 +74,10 @@ public class Main extends JavaPlugin {
         int pluginId = 15317;
         Metrics metrics = new Metrics(this, pluginId);
         PluginManager pm = getServer().getPluginManager();
-        voting = new Voting(this);
-        eventhandlers = new EventHandlers(this, voting);
-        commands = new Commands(this, voting);
+        messageFormatting = new MessageFormatting(this);
+        voting = new Voting(this, messageFormatting);
+        eventhandlers = new EventHandlers(this, voting, messageFormatting);
+        commands = new Commands(this, voting, messageFormatting);
         getCommand("sleep").setExecutor(commands);
         getCommand("sleep").setTabCompleter(new CommandCompletion());
         pm.registerEvents(eventhandlers, this);
@@ -109,6 +112,7 @@ public class Main extends JavaPlugin {
         reloadConfig();
         FileConfiguration config = this.getConfig();
         useAnimation = config.getBoolean("UseAnimation");
+        broadcastNightSkip = config.getBoolean("BroadcastNightSkip");
         skipPercentage = config.getInt("SkipPercentage");
         skipSpeed = config.getInt("SkipSpeed");
         sleepInfo = config.getString("SleepInfo");
@@ -127,6 +131,7 @@ public class Main extends JavaPlugin {
             delaySeconds = 0;
         }
         checkUpdates = config.getBoolean("CheckForUpdates");
+        messageFormatting.loadConfig(config);
         voting.loadConfig(config);
         commands.loadConfig(config);
         if (checkUpdates) updateChecker();
@@ -226,14 +231,19 @@ public class Main extends JavaPlugin {
                         if (debugPlayers.contains(player.getUniqueId())) {
                             player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
                         }
-                        String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
-                        for (Player players : world.getPlayers()) {
-                            sendMessage(players, ChatColor.translateAlternateColorCodes('&',
-                                    chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
-                                            .replace("%count%", dfrmt.format(wsleeping))
-                                            .replace("%count_needed%", dfrmt.format(countNeeded))
-                                            .replace("%player%", player.getName())));
+                        
+                        if (broadcastNightSkip)
+                        {
+                            String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
+                            for (Player players : world.getPlayers()) {
+                                sendMessage(players, ChatColor.translateAlternateColorCodes('&',
+                                        chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
+                                                .replace("%count%", dfrmt.format(wsleeping))
+                                                .replace("%count_needed%", dfrmt.format(countNeeded))
+                                                .replace("%player%", player.getName())));
+                            }
                         }
+                        
                         skipping.add(pWorld);
                         recentlySkipped.add(pWorld);
                         if (!useAnimation) {

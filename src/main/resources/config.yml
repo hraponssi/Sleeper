@@ -3,6 +3,12 @@
 # Plugin settings
 CheckForUpdates: true
 
+# Available serializers:
+# legacy_ampersand - "&c&lExample Text"
+# legacy_section - "§c§lExample Text"
+# minimessage - "<red><bold>Example Text"
+FormattingType: "legacy_ampersand"
+
 # Main settings
 UseAnimation: true
 SkipPercentage: 25
@@ -11,6 +17,7 @@ DelaySleep: false
 DelaySeconds: 4
 
 # Other settings
+BroadcastNightSkip: false
 BroadcastSleepInfo: false
 
 # Voting system, a night is skipped based on yes votes minus no votes
