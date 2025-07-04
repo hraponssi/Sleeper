@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -11,6 +12,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class Voting {
@@ -33,6 +35,8 @@ public class Voting {
     HashMap<String, String> yesVotes = new HashMap<>();
     HashMap<String, String> noVotes = new HashMap<>();
     
+    private int tickCounter = 0;
+    
     // Voting setting values
     boolean useVote = false;
     int yesMultiplier = 1;
@@ -40,6 +44,7 @@ public class Voting {
     int skipVotePercent = 50;
     boolean blockBedsAfterVoting = false;
     boolean bossbarVoteCount = true;
+    boolean actionVoteCount = true;
     boolean sendVotesOnStart = true;
     boolean voteStarts = false;
     int maxVoteTime = 60;
@@ -200,6 +205,15 @@ public class Voting {
                     plugin.bar.addPlayer(player);
                 }
             }
+            if (actionVoteCount) {
+                tickCounter++;
+                if (tickCounter % 20 != 0) return;
+                for (Player player : world.getPlayers()) {
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(messageFormatting.parseMessage(
+                        listVotes.replace("%yes%", dfrmt.format(countYes(worldName))).replace("%no%",
+                                dfrmt.format(countNo(worldName))))));
+                }
+            }
             if (votingWorldTimes.containsKey(worldName)) {
                 int timeLeft = votingWorldTimes.get(worldName)-1;
                 // If time ran out end the vote
@@ -248,6 +262,7 @@ public class Voting {
         voteNotEnabled = config.getString("VoteNotEnabled");
         blockBedsAfterVoting = config.getBoolean("BlockBedsAfterVoting");
         bossbarVoteCount = config.getBoolean("BossbarVoteCount");
+        actionVoteCount = config.getBoolean("ActionbarVoteCount");
         sendVotesOnStart = config.getBoolean("SendVotesOnStart");
         voteStarts = config.getBoolean("StartWithoutSleep");
         maxVoteTime = config.getInt("MaxVoteTime");
