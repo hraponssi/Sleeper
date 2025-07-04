@@ -16,7 +16,7 @@ public class MessageFormatting {
         this.plugin = plugin;
     }
     
-    Set<String> allowedTypes = Set.of("LEGACY_AMPERSAND", "LEGACY_SECTION", "MINIMESSAGE");
+    Set<String> allowedTypes = Set.of("MINECRAFT", "MINIMESSAGE");
     
     // Setting value
     String formattingType = "MINIMESSAGE";
@@ -25,10 +25,8 @@ public class MessageFormatting {
     
     public String parseMessage(String message) {
         switch (formattingType) {
-            case "LEGACY_AMPERSAND":
+            case "MINECRAFT":
                 return ChatColor.translateAlternateColorCodes('&', message);
-            case "LEGACY_SECTION":
-                return ChatColor.translateAlternateColorCodes('§', message);
             case "MINIMESSAGE":
                 Component component = miniMessage.deserialize(message);
                 return LegacyComponentSerializer.legacySection().serialize(component);
