@@ -3,6 +3,11 @@
 # Plugin settings
 CheckForUpdates: true
 
+# Available serializers:
+# minecraft - "&c&lExample Text"
+# minimessage - "<red><bold>Example Text"
+FormattingType: "minecraft"
+
 # Main settings
 UseAnimation: true
 SkipPercentage: 25

@@ -18,11 +18,13 @@ public class EventHandlers implements Listener {
 
     Main plugin;
     Voting voting;
+    MessageFormatting messageFormatting;
 
-    public EventHandlers(Main plugin, Voting voting) {
+    public EventHandlers(Main plugin, Voting voting, MessageFormatting messageFormatting) {
         super();
         this.plugin = plugin;
         this.voting = voting;
+        this.messageFormatting = messageFormatting;
         dfrmt.setMaximumFractionDigits(2);
     }
 
@@ -50,7 +52,7 @@ public class EventHandlers implements Listener {
         int countNeeded =  (int) Math.ceil(wonline*(plugin.skipPercentage/100d));
         if (wsleeping > 0) plugin.sleepingWorlds.put(player.getWorld().getName(), wsleeping - 1);
         if (!plugin.recentlySkipped.contains(player.getWorld().getName())) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+            player.sendMessage(messageFormatting.parseMessage(
                     plugin.sleepInfo.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
                             .replace("%count_needed%", dfrmt.format(countNeeded))
                             .replace("%count%", dfrmt.format(wsleeping))));
@@ -73,7 +75,7 @@ public class EventHandlers implements Listener {
             float wsleeping = plugin.sleepingWorlds.getOrDefault(player.getWorld().getName(), 0f);
             float wonline = plugin.playersOnline.getOrDefault(player.getWorld().getName(), 0f);
             int countNeeded =  (int) Math.ceil(wonline*(plugin.skipPercentage/100d));
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+            player.sendMessage(messageFormatting.parseMessage(
                     plugin.ignored.replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
                             .replace("%count_needed%", dfrmt.format(countNeeded))
                             .replace("%count%", dfrmt.format(wsleeping))));

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -17,11 +16,14 @@ import net.md_5.bungee.api.chat.TextComponent;
 public class Voting {
 
     Main plugin;
+    
+    MessageFormatting messageFormatting;
 
     DecimalFormat dfrmt = new DecimalFormat();
     
-    public Voting(Main plugin) {
+    public Voting(Main plugin, MessageFormatting messageFormatting) {
         this.plugin = plugin;
+        this.messageFormatting = messageFormatting;
         dfrmt.setMaximumFractionDigits(2);
     }
     
@@ -73,54 +75,54 @@ public class Voting {
 
     public void voteYes(Player player) {
         if (!player.hasPermission("sleeper.vote")) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
+            player.sendMessage(messageFormatting.parseMessage(plugin.noPermission));
             return;
         }
         if (!useVote) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteNotEnabled));
+            player.sendMessage(messageFormatting.parseMessage(voteNotEnabled));
             return;
         }
         if (voteStarts && !votingWorlds.contains(player.getWorld().getName())) {
             startVote(player);
         }
         if (!votingWorlds.contains(player.getWorld().getName())) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', noVote));
+            player.sendMessage(messageFormatting.parseMessage(noVote));
             return;
         }
         if (yesVotes.containsKey(player.getName())) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', alreadyYes));
+            player.sendMessage(messageFormatting.parseMessage(alreadyYes));
             return;
         }
         noVotes.remove(player.getName());
         yesVotes.put(player.getName(), player.getWorld().getName());
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&', votedYes));
+        player.sendMessage(messageFormatting.parseMessage(votedYes));
         plugin.onlinePlayers(player.getWorld().getName());
         showVotes(player);
     }
 
     public void voteNo(Player player) {
         if (!player.hasPermission("sleeper.vote")) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
+            player.sendMessage(messageFormatting.parseMessage(plugin.noPermission));
             return;
         }
         if (!useVote) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteNotEnabled));
+            player.sendMessage(messageFormatting.parseMessage(voteNotEnabled));
             return;
         }
         if (voteStarts && !votingWorlds.contains(player.getWorld().getName())) {
             startVote(player);
         }
         if (!votingWorlds.contains(player.getWorld().getName())) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', noVote));
+            player.sendMessage(messageFormatting.parseMessage(noVote));
             return;
         }
         if (noVotes.containsKey(player.getName())) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', alreadyNo));
+            player.sendMessage(messageFormatting.parseMessage(alreadyNo));
             return;
         }
         yesVotes.remove(player.getName());
         noVotes.put(player.getName(), player.getWorld().getName());
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&', votedNo));
+        player.sendMessage(messageFormatting.parseMessage(votedNo));
         plugin.onlinePlayers(player.getWorld().getName());
         showVotes(player);
     }
@@ -143,22 +145,22 @@ public class Voting {
 
     public void sendVoteMsg(Player player) {
         if (!useVote) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteNotEnabled));
+            player.sendMessage(messageFormatting.parseMessage(voteNotEnabled));
             return;
         }
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&', voteTitle));
+        player.sendMessage(messageFormatting.parseMessage(voteTitle));
         TextComponent yesMessage = new TextComponent(
-                TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', voteYes)));
+                TextComponent.fromLegacyText(messageFormatting.parseMessage(voteYes)));
         yesMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/sleep yes"));
         player.spigot().sendMessage(yesMessage);
         TextComponent noMessage = new TextComponent(
-                TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', voteNo)));
+                TextComponent.fromLegacyText(messageFormatting.parseMessage(voteNo)));
         noMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/sleep no"));
         player.spigot().sendMessage(noMessage);
     }
 
     public void showVotes(Player player) {
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+        player.sendMessage(messageFormatting.parseMessage(
                 listVotes.replace("%yes%", dfrmt.format(countYes(player.getWorld().getName()))).replace("%no%",
                         dfrmt.format(countNo(player.getWorld().getName())))));
     }
@@ -190,7 +192,7 @@ public class Voting {
             long time = world.getTime();
             if (plugin.skipping.contains(worldName)) continue;
             if (bossbarVoteCount) {
-                plugin.bar.setTitle(ChatColor.translateAlternateColorCodes('&',
+                plugin.bar.setTitle(messageFormatting.parseMessage(
                         listVotes.replace("%yes%", dfrmt.format(countYes(worldName))).replace("%no%",
                                 dfrmt.format(countNo(worldName)))));
                 for (Player player : world.getPlayers()) {
@@ -204,7 +206,7 @@ public class Voting {
                 if (timeLeft <= 0) {
                     votingWorldTimes.remove(worldName);
                     world.getPlayers().forEach(
-                            player -> plugin.sendMessage(player, ChatColor.translateAlternateColorCodes('&', voteTimedOut)));
+                            player -> plugin.sendMessage(player, messageFormatting.parseMessage(voteTimedOut)));
                     endVote(worldName);
                 }
                 votingWorldTimes.replace(worldName, timeLeft);
@@ -221,7 +223,7 @@ public class Voting {
                     plugin.skipping.add(worldName);
                     plugin.recentlySkipped.add(worldName);
                     world.getPlayers().forEach(
-                            player -> plugin.sendMessage(player, ChatColor.translateAlternateColorCodes('&', skipByVote)));
+                            player -> plugin.sendMessage(player, messageFormatting.parseMessage(skipByVote)));
                     plugin.getLogger().info("Skipping night by vote in " + worldName);
                 }
             }

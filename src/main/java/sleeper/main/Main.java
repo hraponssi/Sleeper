@@ -28,6 +28,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin { 
+    MessageFormatting messageFormatting;
     Voting voting;
     EventHandlers eventhandlers;
     Commands commands;
@@ -72,9 +73,10 @@ public class Main extends JavaPlugin {
         int pluginId = 15317;
         Metrics metrics = new Metrics(this, pluginId);
         PluginManager pm = getServer().getPluginManager();
-        voting = new Voting(this);
-        eventhandlers = new EventHandlers(this, voting);
-        commands = new Commands(this, voting);
+        messageFormatting = new MessageFormatting(this);
+        voting = new Voting(this, messageFormatting);
+        eventhandlers = new EventHandlers(this, voting, messageFormatting);
+        commands = new Commands(this, voting, messageFormatting);
         getCommand("sleep").setExecutor(commands);
         getCommand("sleep").setTabCompleter(new CommandCompletion());
         pm.registerEvents(eventhandlers, this);
@@ -127,6 +129,7 @@ public class Main extends JavaPlugin {
             delaySeconds = 0;
         }
         checkUpdates = config.getBoolean("CheckForUpdates");
+        messageFormatting.loadConfig(config);
         voting.loadConfig(config);
         commands.loadConfig(config);
         if (checkUpdates) updateChecker();
@@ -195,14 +198,14 @@ public class Main extends JavaPlugin {
                     }
                     // Sleepinfo message
                     if (!broadcastSleepInfo) {
-                        sendMessage(player, ChatColor.translateAlternateColorCodes('&',
+                        sendMessage(player, messageFormatting.parseMessage(
                                 sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                         .replace("%count%", dfrmt.format(wsleeping))
                                         .replace("%count_needed%", dfrmt.format(countNeeded))
                                         .replace("%player%", player.getName())));
                     } else { // Tell everyone in the world
                         for (Player players : world.getPlayers()) {
-                            sendMessage(players, ChatColor.translateAlternateColorCodes('&',
+                            sendMessage(players, messageFormatting.parseMessage(
                                     sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
                                             .replace("%count_needed%", dfrmt.format(countNeeded))
@@ -226,14 +229,16 @@ public class Main extends JavaPlugin {
                         if (debugPlayers.contains(player.getUniqueId())) {
                             player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
                         }
+                        
                         String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
                         for (Player players : world.getPlayers()) {
-                            sendMessage(players, ChatColor.translateAlternateColorCodes('&',
+                            sendMessage(players, messageFormatting.parseMessage(
                                     chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
                                             .replace("%count%", dfrmt.format(wsleeping))
                                             .replace("%count_needed%", dfrmt.format(countNeeded))
                                             .replace("%player%", player.getName())));
                         }
+                        
                         skipping.add(pWorld);
                         recentlySkipped.add(pWorld);
                         if (!useAnimation) {

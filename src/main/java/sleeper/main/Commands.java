@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 
 public class Commands implements CommandExecutor {
     Main plugin;
+    MessageFormatting messageFormatting;
     Voting voting;
 
     String msgPlayerNotFound = "&c%player% not found.";
@@ -27,10 +28,11 @@ public class Commands implements CommandExecutor {
     String msgOnlyPlayers = "&cThis command can only be run by players.";
     String sleepHelpList = "&cInvalid command, valid subcommands are: ";
     
-    public Commands(Main plugin, Voting voting) {
+    public Commands(Main plugin, Voting voting, MessageFormatting messageFormatting) {
         super();
         this.plugin = plugin;
         this.voting = voting;
+        this.messageFormatting = messageFormatting;
     }
 
     @Override
@@ -38,7 +40,7 @@ public class Commands implements CommandExecutor {
         switch (cmd.getName().toLowerCase()) {
         case "sleep":
             if (args.length < 1) {
-                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(sender)));
+                sender.sendMessage(messageFormatting.parseMessage(playerHelpMsg(sender)));
                 break;
             }
             // Console compatible commands
@@ -49,23 +51,23 @@ public class Commands implements CommandExecutor {
             		if (!isPlayer(sender)) return true;
             		UUID uuid = ((Player) sender).getUniqueId();
 	                if (plugin.ignorePlayers.contains(uuid)) {
-	                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgSelfIgnoreOff));
+	                    sender.sendMessage(messageFormatting.parseMessage(msgSelfIgnoreOff));
 	                    plugin.ignorePlayers.remove(uuid);
 	                } else {
-	                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgSelfIgnoreOn));
+	                    sender.sendMessage(messageFormatting.parseMessage(msgSelfIgnoreOn));
 	                    plugin.ignorePlayers.add(uuid);
 	                }
             	} else if (args.length < 3) { // Another player
             		String targetName = args[1];
             		Player target = Bukkit.getPlayer(targetName);
             		if (target == null) {
-            			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgPlayerNotFound.replaceAll("%player%", targetName)));
+            			sender.sendMessage(messageFormatting.parseMessage(msgPlayerNotFound.replaceAll("%player%", targetName)));
             		} else {
             			if (plugin.ignorePlayers.contains(target.getUniqueId())) {
-            				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOtherIgnoreOff.replaceAll("%player%", target.getName())));
+            				sender.sendMessage(messageFormatting.parseMessage(msgOtherIgnoreOff.replaceAll("%player%", target.getName())));
     	                    plugin.ignorePlayers.remove(target.getUniqueId());
     	                } else {
-    	                	sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOtherIgnoreOn.replaceAll("%player%", target.getName())));
+    	                	sender.sendMessage(messageFormatting.parseMessage(msgOtherIgnoreOn.replaceAll("%player%", target.getName())));
     	                    plugin.ignorePlayers.add(target.getUniqueId());
     	                }
             		}
@@ -74,19 +76,19 @@ public class Commands implements CommandExecutor {
             		String stateString = args[2].toUpperCase();
             		Player target = Bukkit.getPlayer(targetName);
             		if (target == null) {
-            			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgPlayerNotFound.replaceAll("%player%", targetName)));
+            			sender.sendMessage(messageFormatting.parseMessage(msgPlayerNotFound.replaceAll("%player%", targetName)));
             		} else if (!stateString.equals("TRUE") && !stateString.equals("FALSE")) {
-            			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgInvalidState.replaceAll("%input%", stateString)));
+            			sender.sendMessage(messageFormatting.parseMessage(msgInvalidState.replaceAll("%input%", stateString)));
             		} else {
             			if (stateString.equals("TRUE")) {
             				if (!plugin.ignorePlayers.contains(target.getUniqueId())) {
-            					sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOtherIgnoreOn.replaceAll("%player%", target.getName())));
+            					sender.sendMessage(messageFormatting.parseMessage(msgOtherIgnoreOn.replaceAll("%player%", target.getName())));
         	                    plugin.ignorePlayers.add(target.getUniqueId());
             				} else {
-            					sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOtherAlreadyIgnored.replaceAll("%player%", target.getName())));
+            					sender.sendMessage(messageFormatting.parseMessage(msgOtherAlreadyIgnored.replaceAll("%player%", target.getName())));
             				}
             			} else {
-            				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOtherIgnoreOff.replaceAll("%player%", target.getName())));
+            				sender.sendMessage(messageFormatting.parseMessage(msgOtherIgnoreOff.replaceAll("%player%", target.getName())));
     	                    plugin.ignorePlayers.remove(target.getUniqueId());
     	                }
             		}
@@ -95,7 +97,7 @@ public class Commands implements CommandExecutor {
             case "reload":
             	if (!hasPermission(sender, "sleeper.reload")) break;
                 plugin.loadConfig();
-                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgConfigReloaded));
+                sender.sendMessage(messageFormatting.parseMessage(msgConfigReloaded));
                 return true;
             }
             if (!isPlayer(sender)) return true;
@@ -145,12 +147,12 @@ public class Commands implements CommandExecutor {
                 plugin.getOnlineIgnorers().forEach(p -> player.sendMessage(ChatColor.GRAY + p.getDisplayName()));
                 break;
             default:
-                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(player)));
+                sender.sendMessage(messageFormatting.parseMessage(playerHelpMsg(player)));
                 break;
             }
             break;
         default:
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', playerHelpMsg(sender)));
+            sender.sendMessage(messageFormatting.parseMessage(playerHelpMsg(sender)));
             break;
         }
         return true;
@@ -158,7 +160,7 @@ public class Commands implements CommandExecutor {
     
     private boolean isPlayer(CommandSender sender) {
         if (!(sender instanceof Player)) {
-        	sender.sendMessage(ChatColor.translateAlternateColorCodes('&', msgOnlyPlayers));
+        	sender.sendMessage(messageFormatting.parseMessage(msgOnlyPlayers));
             return false;
         }
         return true;
@@ -166,7 +168,7 @@ public class Commands implements CommandExecutor {
     
     private boolean hasPermission(CommandSender player, String permission) {
     	if (!player.hasPermission(permission)) {
-    		player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.noPermission));
+    		player.sendMessage(messageFormatting.parseMessage(plugin.noPermission));
     		return false;
     	}
     	return true;
