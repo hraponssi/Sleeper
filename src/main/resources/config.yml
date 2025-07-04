@@ -20,6 +20,7 @@ NoMultiplier: 1
 SkipVotePercent: 50
 BlockBedsAfterVoting: false
 BossbarVoteCount: true
+ActionbarVoteCount: false
 SendVotesOnStart: true
 StartWithoutSleep: false
 MaxVoteTime: 60
