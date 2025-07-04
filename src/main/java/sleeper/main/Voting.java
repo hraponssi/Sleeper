@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -12,7 +11,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class Voting {
@@ -35,17 +33,13 @@ public class Voting {
     HashMap<String, String> yesVotes = new HashMap<>();
     HashMap<String, String> noVotes = new HashMap<>();
     
-    Set<String> allowedVoteCountModes = Set.of("none", "bossbar", "actionbar");
-    
-    private int tickCounter = 0;
-    
     // Voting setting values
     boolean useVote = false;
     int yesMultiplier = 1;
     int noMultiplier = 1;
     int skipVotePercent = 50;
     boolean blockBedsAfterVoting = false;
-    String sendVoteCountMode = "none";
+    boolean bossbarVoteCount = true;
     boolean sendVotesOnStart = true;
     boolean voteStarts = false;
     int maxVoteTime = 60;
@@ -197,22 +191,13 @@ public class Voting {
             World world = Bukkit.getWorld(worldName);
             long time = world.getTime();
             if (plugin.skipping.contains(worldName)) continue;
-            if (sendVoteCountMode.equals("bossbar")) {
+            if (bossbarVoteCount) {
                 plugin.bar.setTitle(messageFormatting.parseMessage(
                         listVotes.replace("%yes%", dfrmt.format(countYes(worldName))).replace("%no%",
                                 dfrmt.format(countNo(worldName)))));
                 for (Player player : world.getPlayers()) {
                     if (plugin.bar.getPlayers().contains(player)) continue;
                     plugin.bar.addPlayer(player);
-                }
-            }
-            else if (sendVoteCountMode.equals("actionbar")) {
-                tickCounter++;
-                if (tickCounter % 20 != 0) return;
-                for (Player player : world.getPlayers()) {
-                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(messageFormatting.parseMessage(
-                        listVotes.replace("%yes%", dfrmt.format(countYes(worldName))).replace("%no%",
-                                dfrmt.format(countNo(worldName))))));
                 }
             }
             if (votingWorldTimes.containsKey(worldName)) {
@@ -262,21 +247,12 @@ public class Voting {
         skipByVote = config.getString("SkipByVote");
         voteNotEnabled = config.getString("VoteNotEnabled");
         blockBedsAfterVoting = config.getBoolean("BlockBedsAfterVoting");
+        bossbarVoteCount = config.getBoolean("BossbarVoteCount");
         sendVotesOnStart = config.getBoolean("SendVotesOnStart");
         voteStarts = config.getBoolean("StartWithoutSleep");
         maxVoteTime = config.getInt("MaxVoteTime");
         limitedVoteTime = config.getBoolean("LimitedVoteTime");
         voteTimedOut = config.getString("VoteTimedOut");
-        
-        String configVoteCountMode = config.getString("VoteCountMode");
-        if (configVoteCountMode != null && allowedVoteCountModes.contains(configVoteCountMode.toLowerCase()))
-        {
-            sendVoteCountMode = configVoteCountMode.toLowerCase();
-        }
-        else
-        {
-            plugin.getLogger().warning("VoteCountMode value is not appropriate! Reset to default.");
-        }
     }
     
 }
