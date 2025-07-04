@@ -19,7 +19,7 @@ public class MessageFormatting {
     Set<String> allowedTypes = Set.of("MINECRAFT", "MINIMESSAGE");
     
     // Setting value
-    String formattingType = "MINIMESSAGE";
+    String formattingType = "MINECRAFT";
     
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
     
