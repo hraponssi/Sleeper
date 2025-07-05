@@ -71,6 +71,7 @@ public class GSitHandler implements Listener {
         float wonline = plugin.getPlayersOnline().getOrDefault(worldName, 0f);
         int countNeeded = (int) Math.ceil(wonline * (plugin.skipPercentage / 100d));
         if (wsleeping > 0) plugin.getSleepingWorlds().put(worldName, wsleeping - 1);
+        // An additional check on worldsleepers is done so the message only comes if you stop during that night
         if (!plugin.getRecentlySkipped().contains(worldName) 
                 && plugin.getWorldSleepers(worldName).contains(player.getUniqueId())) {
             player.sendMessage(messageFormatting.parseMessage(plugin.sleepInfo
