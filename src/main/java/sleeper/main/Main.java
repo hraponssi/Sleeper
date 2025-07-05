@@ -27,22 +27,27 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import sleeper.integrations.GSitHandler;
+
 public class Main extends JavaPlugin {
     MessageFormatting messageFormatting;
     Voting voting;
     EventHandlers eventhandlers;
     Commands commands;
+    
+    // Soft dependency integrations with other plugin apis
+    GSitHandler gSitHandler;
 
     DecimalFormat dfrmt = new DecimalFormat();
     Random random = new Random();
 
     // Setting values
     boolean useAnimation = true;
-    int skipPercentage = 25;
+    public int skipPercentage = 25;
     int skipSpeed = 100;
     boolean broadcastSleepInfo = false;
     boolean delaySleep = false;
-    long delaySeconds = 0;
+    public long delaySeconds = 0;
 
     boolean checkUpdates = true;
 
@@ -54,10 +59,11 @@ public class Main extends JavaPlugin {
     ArrayList<UUID> debugPlayers = new ArrayList<UUID>();
     HashMap<String, Float> sleepingWorlds = new HashMap<>();
     HashMap<String, Float> playersOnline = new HashMap<>();
+    HashMap<String, ArrayList<UUID>> worldSleepers = new HashMap<>();
     BossBar bar = Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID);
 
     // Strings
-    String sleepInfo = "&aSleep > &7 %percent% (%count%) out of a minimum of 25% sleeping.";
+    public String sleepInfo = "&aSleep > &7 %percent% (%count%) out of a minimum of 25% sleeping.";
     List<String> nightSkip = List
             .of("&aSleep > &7At least 25% of online users sleeping (%count%), skipping the night.");
     String ignored = "&cSleep > &7You are still being ignored for sleep calculations!";
@@ -81,10 +87,15 @@ public class Main extends JavaPlugin {
         getCommand("sleep").setExecutor(commands);
         getCommand("sleep").setTabCompleter(new CommandCompletion());
         pm.registerEvents(eventhandlers, this);
+        if (pm.getPlugin("GSit") != null) {
+            gSitHandler = new GSitHandler(this, voting, messageFormatting);
+            pm.registerEvents(gSitHandler, this);
+        }
         setConfig();
         loadConfig();
         dfrmt.setMaximumFractionDigits(2);
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
+        // Every tick
+        getServer().getScheduler().runTaskTimer(this, () -> {
             for (String worldName : new ArrayList<>(skipping)) {
                 if (useAnimation) {
                     World world = Bukkit.getWorld(worldName);
@@ -108,6 +119,18 @@ public class Main extends JavaPlugin {
             }
             voting.tick();
         }, 1L, 1L);
+        // Every second
+        getServer().getScheduler().runTaskTimer(this, () -> {
+            // Go over every world
+            for (String worldName : worldSleepers.keySet()) {
+                World world = Bukkit.getWorld(worldName);
+                long time = world.getTime();
+                // Just in case, clear world sleeper lists if it is the morning
+                if (time < 2000) {
+                    worldSleepers.get(worldName).clear();
+                }
+            }
+        }, 2L, 20L);
     }
 
     public void loadConfig() {
@@ -135,6 +158,7 @@ public class Main extends JavaPlugin {
         messageFormatting.loadConfig(config);
         voting.loadConfig(config);
         commands.loadConfig(config);
+        gSitHandler.loadConfig(config);
         if (checkUpdates) updateChecker();
     }
 
@@ -169,19 +193,21 @@ public class Main extends JavaPlugin {
         if (!message.equals("")) player.sendMessage(message);
     }
 
-    public void sleep(Player player) {
+    public void sleep(Player player, boolean skipSleepCheck) {
         String pWorld = player.getWorld().getName();
         World world = Bukkit.getWorld(pWorld);
+        if (!worldSleepers.keySet().contains(pWorld)) worldSleepers.put(pWorld, new ArrayList<>());
         if (ignorePlayers.contains(player.getUniqueId())) return;
         Main plugin = this;
         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
-                if (player.isOnline() && player.isSleeping() == true) {
+                if (player.isOnline() && (player.isSleeping() == true || skipSleepCheck)) {
                     float wonline = onlinePlayers(pWorld);
                     float wsleeping = sleepingWorlds.getOrDefault(player.getWorld().getName(), 0f);
                     // Increase sleeper count
                     wsleeping++;
                     sleepingWorlds.put(pWorld, wsleeping);
+                    worldSleepers.get(pWorld).add(player.getUniqueId());
                     float percentage = (wsleeping / wonline) * 100;
                     int countNeeded = (int) Math.ceil(wonline * (skipPercentage / 100d));
                     // Replace e.g. infinity percentage with 100%, if ignored players slept
@@ -246,6 +272,7 @@ public class Main extends JavaPlugin {
                                                     .replace("%player%", player.getName())));
                         }
 
+                        worldSleepers.get(pWorld).clear();
                         skipping.add(pWorld);
                         recentlySkipped.add(pWorld);
                         if (!useAnimation) {
@@ -294,6 +321,22 @@ public class Main extends JavaPlugin {
         float total = Bukkit.getOnlinePlayers().size() - onlineIgnored;
         playersOnline.put(worldName, total);
         return total;
+    }
+    
+    public HashMap<String, Float> getPlayersOnline() {
+        return playersOnline;
+    }
+    
+    public HashMap<String, Float> getSleepingWorlds() {
+        return sleepingWorlds;
+    }
+    
+    public ArrayList<String> getRecentlySkipped() {
+        return recentlySkipped;
+    }
+    
+    public ArrayList<UUID> getWorldSleepers(String worldName) {
+        return worldSleepers.getOrDefault(worldName, new ArrayList<>());
     }
 
     public ArrayList<Player> getOnlineIgnorers() { // TODO there are two definitions of "ignored": these in the list or

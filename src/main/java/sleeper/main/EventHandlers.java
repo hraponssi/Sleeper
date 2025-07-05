@@ -40,43 +40,49 @@ public class EventHandlers implements Listener {
                 voting.voteYes(player);
                 return;
             }
-            plugin.sleep(player);
+            plugin.sleep(player, false);
         }, 20L * plugin.delaySeconds);
     }
 
     @EventHandler
     public void onBedExit(PlayerBedLeaveEvent event) {
         Player player = event.getPlayer();
-        float wsleeping = plugin.sleepingWorlds.getOrDefault(player.getWorld().getName(), 0f);
-        float wonline = plugin.playersOnline.getOrDefault(player.getWorld().getName(), 0f);
+        String worldName = player.getWorld().getName();
+        float wsleeping = plugin.sleepingWorlds.getOrDefault(worldName, 0f);
+        float wonline = plugin.playersOnline.getOrDefault(worldName, 0f);
         int countNeeded = (int) Math.ceil(wonline * (plugin.skipPercentage / 100d));
-        if (wsleeping > 0) plugin.sleepingWorlds.put(player.getWorld().getName(), wsleeping - 1);
-        if (!plugin.recentlySkipped.contains(player.getWorld().getName())) {
+        if (wsleeping > 0) plugin.sleepingWorlds.put(worldName, wsleeping - 1);
+        if (!plugin.recentlySkipped.contains(worldName)) {
             player.sendMessage(messageFormatting.parseMessage(plugin.sleepInfo
                     .replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
                     .replace("%count_needed%", dfrmt.format(countNeeded)).replace("%count%", dfrmt.format(wsleeping))));
         }
+        plugin.getWorldSleepers(worldName).remove(player.getUniqueId());
     }
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        String worldName = player.getWorld().getName();
         if (player.isSleeping()) {
-            float wsleeping = plugin.sleepingWorlds.getOrDefault((player.getWorld().getName()), 0f);
-            if (wsleeping > 0) plugin.sleepingWorlds.put(player.getWorld().getName(), wsleeping - 1);
+            float wsleeping = plugin.sleepingWorlds.getOrDefault(worldName, 0f);
+            if (wsleeping > 0) plugin.sleepingWorlds.put(worldName, wsleeping - 1);
         }
+        plugin.getWorldSleepers(worldName).remove(player.getUniqueId());
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        String worldName = player.getWorld().getName();
         if (plugin.ignorePlayers.contains(player.getUniqueId())) {
-            float wsleeping = plugin.sleepingWorlds.getOrDefault(player.getWorld().getName(), 0f);
-            float wonline = plugin.playersOnline.getOrDefault(player.getWorld().getName(), 0f);
+            float wsleeping = plugin.sleepingWorlds.getOrDefault(worldName, 0f);
+            float wonline = plugin.playersOnline.getOrDefault(worldName, 0f);
             int countNeeded = (int) Math.ceil(wonline * (plugin.skipPercentage / 100d));
             player.sendMessage(messageFormatting.parseMessage(plugin.ignored
                     .replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
                     .replace("%count_needed%", dfrmt.format(countNeeded)).replace("%count%", dfrmt.format(wsleeping))));
         }
     }
+    
 }

@@ -42,7 +42,7 @@ public class Voting {
     int yesMultiplier = 1;
     int noMultiplier = 1;
     int skipVotePercent = 50;
-    boolean blockBedsAfterVoting = false;
+    public boolean blockBedsAfterVoting = false;
     boolean bossbarVoteCount = true;
     boolean actionVoteCount = true;
     boolean sendVotesOnStart = true;
@@ -269,6 +269,10 @@ public class Voting {
         maxVoteTime = config.getInt("MaxVoteTime");
         limitedVoteTime = config.getBoolean("LimitedVoteTime");
         voteTimedOut = config.getString("VoteTimedOut");
+    }
+    
+    public ArrayList<String> getVotingWorlds() {
+        return votingWorlds;
     }
 
 }

@@ -43,4 +43,5 @@ public class MessageFormatting {
             plugin.getLogger().warning("FormattingType value is not appropriate! Reset to default.");
         }
     }
+    
 }

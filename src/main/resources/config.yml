@@ -31,6 +31,10 @@ StartWithoutSleep: false
 MaxVoteTime: 60
 LimitedVoteTime: false
 
+# Plugin integrations
+# GSit
+GSitPoseToSleep: false
+
 # General Messages
 SleepInfo: "&aSleep > &7%percent% (%count%) out of a minimum of 25% sleeping."
 NightSkip: 
