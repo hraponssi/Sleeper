@@ -46,7 +46,7 @@ public class Commands implements CommandExecutor {
             // Console compatible commands
             switch (args[0].toLowerCase()) {
             case "ignore":
-                if (!hasPermission(sender, "sleeper.ignore")) break;
+                if (!hasPermission(sender, "sleeper.ignore")) return true;
                 if (args.length < 2) { // Self
                     if (!isPlayer(sender))  return true;
                     UUID uuid = ((Player) sender).getUniqueId();
@@ -103,7 +103,7 @@ public class Commands implements CommandExecutor {
                 }
                 return true;
             case "reload":
-                if (!hasPermission(sender, "sleeper.reload")) break;
+                if (!hasPermission(sender, "sleeper.reload")) return true;
                 plugin.loadConfig();
                 sender.sendMessage(messageFormatting.parseMessage(msgConfigReloaded));
                 return true;
