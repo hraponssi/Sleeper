@@ -102,11 +102,11 @@ public class Main extends JavaPlugin {
                     long time = world.getTime();
                     world.setTime(time + skipSpeed);
                     world.setStorm(false);
-                    if (time >= 24000) {
+                    if (time%24000 < 2000) {
+                        /*
                         world.setTime(0);
                         time = 0;
-                    }
-                    if (time < 2000) {
+                        */
                         skipping.remove(worldName);
                         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> { // Force sleeping count
                                                                                                 // to 0 in case it has
@@ -126,7 +126,7 @@ public class Main extends JavaPlugin {
                 World world = Bukkit.getWorld(worldName);
                 long time = world.getTime();
                 // Just in case, clear world sleeper lists if it is the morning
-                if (time < 2000) {
+                if (time%24000 < 2000) {
                     worldSleepers.get(worldName).clear();
                 }
             }
@@ -282,7 +282,7 @@ public class Main extends JavaPlugin {
                                         player.sendMessage(
                                                 ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping after delay");
                                     }
-                                    world.setTime(0);
+                                    world.setTime(world.getTime()+24000-(world.getTime()%24000));
                                     world.setStorm(false);
                                     skipping.remove(pWorld);
                                     Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
