@@ -31,3 +31,8 @@ Plugin integrations:
 - ***sleeper.ignore*** - Use the "ignore" subcommand to set yourself or others to be ignored by Sleeper.
 - ***sleeper.reload*** - Use the "reload" subcommand to reload plugin configuration.
 - ***sleeper.data*** - Use the "debug" subcommand to see debug messages.
+
+### Contributing
+
+Contributions are welcome via suggestions or pull requests. When making PRs please keep them to one change/issue per PR.
+The project is licensed under GPL v3 and so are any contributions.
