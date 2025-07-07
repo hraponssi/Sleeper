@@ -4,14 +4,14 @@
 
 	<groupId>Sleeper</groupId>
 	<artifactId>Sleeper</artifactId>
-	<version>1.7.0</version>
+	<version>1.8.0</version>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	
 	<name>Sleeper</name>
-	<description>Skip the night with a percentage or vote of players and an animation.</description>
+	<description>Customize skipping the night with an animation or voting.</description>
 
 	<pluginRepositories>
 		<pluginRepository>
