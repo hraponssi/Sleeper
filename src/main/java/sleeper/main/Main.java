@@ -158,7 +158,7 @@ public class Main extends JavaPlugin {
         messageFormatting.loadConfig(config);
         voting.loadConfig(config);
         commands.loadConfig(config);
-        gSitHandler.loadConfig(config);
+        if (gSitHandler != null) gSitHandler.loadConfig(config);
         if (checkUpdates) updateChecker();
     }
 
