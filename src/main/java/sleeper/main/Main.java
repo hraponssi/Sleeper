@@ -107,6 +107,7 @@ public class Main extends JavaPlugin {
                         world.setTime(0);
                         time = 0;
                         */
+                        broadcastDebug("Looks like it's time < 2000, stop the animation.");
                         skipping.remove(worldName);
                         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> { // Force sleeping count
                                                                                                 // to 0 in case it has
@@ -251,9 +252,7 @@ public class Main extends JavaPlugin {
                     }
                     // Check if skip should be done
                     if (percentage >= skipPercentage && !skipping.contains(pWorld)) { // Skip
-                        if (debugPlayers.contains(player.getUniqueId())) {
-                            player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
-                        }
+                        broadcastDebug("Skipping...");
 
                         String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
                         for (Player players : world.getPlayers()) {
@@ -270,10 +269,7 @@ public class Main extends JavaPlugin {
                         if (!useAnimation) {
                             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
                                 public void run() {
-                                    if (player.isOnline() && debugPlayers.contains(player.getUniqueId())) {
-                                        player.sendMessage(
-                                                ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping after delay");
-                                    }
+                                    broadcastDebug("Skipping after delay");
                                     world.setTime(world.getTime()+24000-(world.getTime()%24000));
                                     world.setStorm(false);
                                     skipping.remove(pWorld);
@@ -290,15 +286,21 @@ public class Main extends JavaPlugin {
                                 }
                             }, 120L);
                         } else {
-                            if (debugPlayers.contains(player.getUniqueId())) {
-                                player.sendMessage(
-                                        ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping with animation");
-                            }
+                            broadcastDebug("Skipping with animation");
                         }
                     }
                 }
             }
         }, 1L);
+    }
+    
+    // Broadcast a debug message to all debug players
+    public void broadcastDebug(String message) {
+        for (UUID debugUUID : debugPlayers) {
+            Player player = Bukkit.getPlayer(debugUUID);
+            if (!player.isOnline()) continue;
+            player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + message);
+        }
     }
 
     public float onlinePlayers(String worldName) {
