@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 
 public class Commands implements CommandExecutor {
     Main plugin;
-    MessageFormatting messageFormatting;
+    MessageHandler messageHandler;
     Voting voting;
 
     String msgPlayerNotFound = "&c%player% not found.";
@@ -28,11 +28,11 @@ public class Commands implements CommandExecutor {
     String msgOnlyPlayers = "&cThis command can only be run by players.";
     String sleepHelpList = "&cInvalid command, valid subcommands are: ";
     
-    public Commands(Main plugin, Voting voting, MessageFormatting messageFormatting) {
+    public Commands(Main plugin, Voting voting, MessageHandler messageFormatting) {
         super();
         this.plugin = plugin;
         this.voting = voting;
-        this.messageFormatting = messageFormatting;
+        this.messageHandler = messageFormatting;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class Commands implements CommandExecutor {
         switch (cmd.getName().toLowerCase()) {
         case "sleep":
             if (args.length < 1) {
-                sender.sendMessage(messageFormatting.parseMessage(playerHelpMsg(sender)));
+                sender.sendMessage(messageHandler.parseMessage(playerHelpMsg(sender)));
                 break;
             }
             // Console compatible commands
@@ -51,25 +51,25 @@ public class Commands implements CommandExecutor {
                     if (!isPlayer(sender))  return true;
                     UUID uuid = ((Player) sender).getUniqueId();
                     if (plugin.ignorePlayers.contains(uuid)) {
-                        sender.sendMessage(messageFormatting.parseMessage(msgSelfIgnoreOff));
+                        sender.sendMessage(messageHandler.parseMessage(msgSelfIgnoreOff));
                         plugin.ignorePlayers.remove(uuid);
                     } else {
-                        sender.sendMessage(messageFormatting.parseMessage(msgSelfIgnoreOn));
+                        sender.sendMessage(messageHandler.parseMessage(msgSelfIgnoreOn));
                         plugin.ignorePlayers.add(uuid);
                     }
                 } else if (args.length < 3) { // Another player
                     String targetName = args[1];
                     Player target = Bukkit.getPlayer(targetName);
                     if (target == null) {
-                        sender.sendMessage(messageFormatting
+                        sender.sendMessage(messageHandler
                                 .parseMessage(msgPlayerNotFound.replaceAll("%player%", targetName)));
                     } else {
                         if (plugin.ignorePlayers.contains(target.getUniqueId())) {
-                            sender.sendMessage(messageFormatting
+                            sender.sendMessage(messageHandler
                                     .parseMessage(msgOtherIgnoreOff.replaceAll("%player%", target.getName())));
                             plugin.ignorePlayers.remove(target.getUniqueId());
                         } else {
-                            sender.sendMessage(messageFormatting
+                            sender.sendMessage(messageHandler
                                     .parseMessage(msgOtherIgnoreOn.replaceAll("%player%", target.getName())));
                             plugin.ignorePlayers.add(target.getUniqueId());
                         }
@@ -79,23 +79,23 @@ public class Commands implements CommandExecutor {
                     String stateString = args[2].toUpperCase();
                     Player target = Bukkit.getPlayer(targetName);
                     if (target == null) {
-                        sender.sendMessage(messageFormatting
+                        sender.sendMessage(messageHandler
                                 .parseMessage(msgPlayerNotFound.replaceAll("%player%", targetName)));
                     } else if (!stateString.equals("TRUE") && !stateString.equals("FALSE")) {
-                        sender.sendMessage(messageFormatting
+                        sender.sendMessage(messageHandler
                                 .parseMessage(msgInvalidState.replaceAll("%input%", stateString)));
                     } else {
                         if (stateString.equals("TRUE")) {
                             if (!plugin.ignorePlayers.contains(target.getUniqueId())) {
-                                sender.sendMessage(messageFormatting
+                                sender.sendMessage(messageHandler
                                         .parseMessage(msgOtherIgnoreOn.replaceAll("%player%", target.getName())));
                                 plugin.ignorePlayers.add(target.getUniqueId());
                             } else {
-                                sender.sendMessage(messageFormatting
+                                sender.sendMessage(messageHandler
                                         .parseMessage(msgOtherAlreadyIgnored.replaceAll("%player%", target.getName())));
                             }
                         } else {
-                            sender.sendMessage(messageFormatting
+                            sender.sendMessage(messageHandler
                                     .parseMessage(msgOtherIgnoreOff.replaceAll("%player%", target.getName())));
                             plugin.ignorePlayers.remove(target.getUniqueId());
                         }
@@ -105,7 +105,7 @@ public class Commands implements CommandExecutor {
             case "reload":
                 if (!hasPermission(sender, "sleeper.reload")) return true;
                 plugin.loadConfig();
-                sender.sendMessage(messageFormatting.parseMessage(msgConfigReloaded));
+                sender.sendMessage(messageHandler.parseMessage(msgConfigReloaded));
                 return true;
             }
             if (!isPlayer(sender)) return true;
@@ -156,12 +156,12 @@ public class Commands implements CommandExecutor {
                 plugin.getOnlineIgnorers().forEach(p -> player.sendMessage(ChatColor.GRAY + p.getDisplayName()));
                 break;
             default:
-                sender.sendMessage(messageFormatting.parseMessage(playerHelpMsg(player)));
+                sender.sendMessage(messageHandler.parseMessage(playerHelpMsg(player)));
                 break;
             }
             break;
         default:
-            sender.sendMessage(messageFormatting.parseMessage(playerHelpMsg(sender)));
+            sender.sendMessage(messageHandler.parseMessage(playerHelpMsg(sender)));
             break;
         }
         return true;
@@ -169,7 +169,7 @@ public class Commands implements CommandExecutor {
 
     private boolean isPlayer(CommandSender sender) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(messageFormatting.parseMessage(msgOnlyPlayers));
+            sender.sendMessage(messageHandler.parseMessage(msgOnlyPlayers));
             return false;
         }
         return true;
@@ -177,7 +177,7 @@ public class Commands implements CommandExecutor {
 
     private boolean hasPermission(CommandSender player, String permission) {
         if (!player.hasPermission(permission)) {
-            player.sendMessage(messageFormatting.parseMessage(plugin.noPermission));
+            player.sendMessage(messageHandler.parseMessage(plugin.noPermission));
             return false;
         }
         return true;

@@ -14,6 +14,7 @@ SkipPercentage: 25
 SkipSpeed: 100
 DelaySleep: false
 DelaySeconds: 4
+ActionbarMessages: false
 
 # Other settings
 BroadcastSleepInfo: false

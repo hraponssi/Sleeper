@@ -3,16 +3,20 @@ package sleeper.main;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 
 import java.util.Set;
 
-public class MessageFormatting {
+public class MessageHandler {
 
     Main plugin;
 
-    public MessageFormatting(Main plugin) {
+    public MessageHandler(Main plugin) {
         this.plugin = plugin;
     }
 
@@ -33,6 +37,31 @@ public class MessageFormatting {
         default:
             return message;
         }
+    }
+    
+    // Message sending system to allow skipping sending blank messages
+    public void sendMessage(Player player, String message) {
+        if (message.equals("")) return;
+        if (plugin.actionbarMessages) {
+            sendActionbarMessage(player, message);
+        } else {
+            player.sendMessage(parseMessage(message));
+        }
+    }
+    
+    // Message sending system to allow skipping sending blank messages, without parsing colors
+    public void sendMessageUnparsed(Player player, String message) {
+        if (message.equals("")) return;
+        if (plugin.actionbarMessages) {
+            sendActionbarMessage(player, message);
+        } else {
+            player.sendMessage(message);
+        }
+    }
+    
+    public void sendActionbarMessage(Player player, String message) {
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                TextComponent.fromLegacyText(parseMessage(message)));
     }
 
     public void loadConfig(FileConfiguration config) {

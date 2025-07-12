@@ -8,7 +8,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Random;
 import java.util.UUID;
 
@@ -30,7 +29,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import sleeper.integrations.GSitHandler;
 
 public class Main extends JavaPlugin {
-    MessageFormatting messageFormatting;
+    MessageHandler messageHandler;
     Voting voting;
     EventHandlers eventhandlers;
     Commands commands;
@@ -48,6 +47,7 @@ public class Main extends JavaPlugin {
     boolean broadcastSleepInfo = false;
     boolean delaySleep = false;
     public long delaySeconds = 0;
+    boolean actionbarMessages = false;
 
     boolean checkUpdates = true;
 
@@ -80,15 +80,15 @@ public class Main extends JavaPlugin {
         int pluginId = 15317;
         Metrics metrics = new Metrics(this, pluginId);
         PluginManager pm = getServer().getPluginManager();
-        messageFormatting = new MessageFormatting(this);
-        voting = new Voting(this, messageFormatting);
-        eventhandlers = new EventHandlers(this, voting, messageFormatting);
-        commands = new Commands(this, voting, messageFormatting);
+        messageHandler = new MessageHandler(this);
+        voting = new Voting(this, messageHandler);
+        eventhandlers = new EventHandlers(this, voting, messageHandler);
+        commands = new Commands(this, voting, messageHandler);
         getCommand("sleep").setExecutor(commands);
         getCommand("sleep").setTabCompleter(new CommandCompletion());
         pm.registerEvents(eventhandlers, this);
         if (pm.getPlugin("GSit") != null) {
-            gSitHandler = new GSitHandler(this, voting, messageFormatting);
+            gSitHandler = new GSitHandler(this, voting, messageHandler);
             pm.registerEvents(gSitHandler, this);
         }
         setConfig();
@@ -151,11 +151,12 @@ public class Main extends JavaPlugin {
         broadcastSleepInfo = config.getBoolean("BroadcastSleepInfo");
         delaySeconds = config.getLong("DelaySeconds");
         delaySleep = config.getBoolean("DelaySleep");
+        actionbarMessages = config.getBoolean("ActionbarMessages");
         if (!delaySleep) {
             delaySeconds = 0;
         }
         checkUpdates = config.getBoolean("CheckForUpdates");
-        messageFormatting.loadConfig(config);
+        messageHandler.loadConfig(config);
         voting.loadConfig(config);
         commands.loadConfig(config);
         if (gSitHandler != null) gSitHandler.loadConfig(config);
@@ -188,17 +189,12 @@ public class Main extends JavaPlugin {
         });
     }
 
-    // Message sending system to allow skipping sending blank messages
-    public void sendMessage(Player player, String message) {
-        if (!message.equals("")) player.sendMessage(message);
-    }
-
     public void sleep(Player player, boolean skipSleepCheck) {
-        String pWorld = player.getWorld().getName();
-        World world = Bukkit.getWorld(pWorld);
+        World world = player.getWorld();
+        String pWorld = world.getName();
+        Main plugin = this;
         if (!worldSleepers.keySet().contains(pWorld)) worldSleepers.put(pWorld, new ArrayList<>());
         if (ignorePlayers.contains(player.getUniqueId())) return;
-        Main plugin = this;
         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
                 if (player.isOnline() && (player.isSleeping() == true || skipSleepCheck)) {
@@ -228,20 +224,17 @@ public class Main extends JavaPlugin {
                     }
                     // Sleepinfo message
                     if (!broadcastSleepInfo) {
-                        sendMessage(player,
-                                messageFormatting
-                                        .parseMessage(sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
+                        messageHandler.sendMessage(player, sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                                 .replace("%count%", dfrmt.format(wsleeping))
                                                 .replace("%count_needed%", dfrmt.format(countNeeded))
-                                                .replace("%player%", player.getName())));
+                                                .replace("%player%", player.getName()));
                     } else { // Tell everyone in the world
                         for (Player players : world.getPlayers()) {
-                            sendMessage(players,
-                                    messageFormatting
-                                            .parseMessage(sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
+                            messageHandler.sendMessage(players,
+                                    sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                                                     .replace("%count%", dfrmt.format(wsleeping))
                                                     .replace("%count_needed%", dfrmt.format(countNeeded))
-                                                    .replace("%player%", player.getName())));
+                                                    .replace("%player%", player.getName()));
                         }
                     }
                     // Debug
@@ -264,12 +257,11 @@ public class Main extends JavaPlugin {
 
                         String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
                         for (Player players : world.getPlayers()) {
-                            sendMessage(players,
-                                    messageFormatting.parseMessage(
-                                            chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
+                            messageHandler.sendMessage(players,
+                                    chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
                                                     .replace("%count%", dfrmt.format(wsleeping))
                                                     .replace("%count_needed%", dfrmt.format(countNeeded))
-                                                    .replace("%player%", player.getName())));
+                                                    .replace("%player%", player.getName()));
                         }
 
                         worldSleepers.get(pWorld).clear();
