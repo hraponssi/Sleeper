@@ -48,6 +48,8 @@ public class Main extends JavaPlugin {
     boolean delaySleep = false;
     public long delaySeconds = 0;
     boolean actionbarMessages = false;
+    boolean persistentSleepInfo = false;
+    int persistenceTime = 30;
 
     boolean checkUpdates = true;
 
@@ -60,6 +62,8 @@ public class Main extends JavaPlugin {
     HashMap<String, Float> sleepingWorlds = new HashMap<>();
     HashMap<String, Float> playersOnline = new HashMap<>();
     HashMap<String, ArrayList<UUID>> worldSleepers = new HashMap<>();
+    HashMap<String, Integer> worldLatestSleepAge = new HashMap<>();
+    HashMap<String, String> worldLatestSleepMessage = new HashMap<>();
     BossBar bar = Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID);
 
     // Strings
@@ -107,7 +111,7 @@ public class Main extends JavaPlugin {
                         world.setTime(0);
                         time = 0;
                         */
-                        broadcastDebug("Looks like it's time < 2000, stop the animation.");
+                        messageHandler.broadcastDebug("Looks like it's time < 2000, stop the animation.");
                         skipping.remove(worldName);
                         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> { // Force sleeping count
                                                                                                 // to 0 in case it has
@@ -116,6 +120,15 @@ public class Main extends JavaPlugin {
                             recentlySkipped.remove(worldName);
                         }, 20L);
                     }
+                }
+            }
+            for (String worldName : worldLatestSleepAge.keySet()) {
+                int age = worldLatestSleepAge.get(worldName);
+                if (age < persistenceTime*20) {
+                    worldLatestSleepAge.replace(worldName, age+1);
+                } else {
+                    worldLatestSleepAge.remove(worldName);
+                    worldLatestSleepMessage.remove(worldName);
                 }
             }
             voting.tick();
@@ -129,6 +142,23 @@ public class Main extends JavaPlugin {
                 // Just in case, clear world sleeper lists if it is the morning
                 if (time%24000 < 2000) {
                     worldSleepers.get(worldName).clear();
+                    worldLatestSleepAge.remove(worldName);
+                    worldLatestSleepMessage.remove(worldName);
+                }
+            }
+            for (String worldName : worldLatestSleepAge.keySet()) {
+                if (!worldLatestSleepMessage.containsKey(worldName)) return;
+                if (!persistentSleepInfo) return;
+                if (!actionbarMessages) return;
+                String msg = worldLatestSleepMessage.get(worldName);
+                if (!broadcastSleepInfo) {
+                    for (UUID uuid : worldSleepers.get(worldName)) {
+                        messageHandler.sendMessage(Bukkit.getPlayer(uuid), msg);
+                    }
+                } else {
+                    for (Player player : Bukkit.getWorld(worldName).getPlayers()) {
+                        messageHandler.sendMessage(player, msg);
+                    }
                 }
             }
         }, 2L, 20L);
@@ -153,6 +183,8 @@ public class Main extends JavaPlugin {
         delaySeconds = config.getLong("DelaySeconds");
         delaySleep = config.getBoolean("DelaySleep");
         actionbarMessages = config.getBoolean("ActionbarMessages");
+        persistentSleepInfo = config.getBoolean("PersistentSleepInfo");
+        persistenceTime = config.getInt("PersistenceTime");
         if (!delaySleep) {
             delaySeconds = 0;
         }
@@ -205,6 +237,7 @@ public class Main extends JavaPlugin {
                     wsleeping++;
                     sleepingWorlds.put(pWorld, wsleeping);
                     worldSleepers.get(pWorld).add(player.getUniqueId());
+                    worldLatestSleepAge.put(pWorld, 0);
                     float percentage = (wsleeping / wonline) * 100;
                     int countNeeded = (int) Math.ceil(wonline * (skipPercentage / 100d));
                     // Replace e.g. infinity percentage with 100%, if ignored players slept
@@ -224,18 +257,16 @@ public class Main extends JavaPlugin {
                                 + voting.votingWorlds.toString());
                     }
                     // Sleepinfo message
+                    String sleepInfoMsg = sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
+                            .replace("%count%", dfrmt.format(wsleeping))
+                            .replace("%count_needed%", dfrmt.format(countNeeded))
+                            .replace("%player%", player.getName());
+                    worldLatestSleepMessage.put(pWorld, sleepInfoMsg);
                     if (!broadcastSleepInfo) {
-                        messageHandler.sendMessage(player, sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
-                                                .replace("%count%", dfrmt.format(wsleeping))
-                                                .replace("%count_needed%", dfrmt.format(countNeeded))
-                                                .replace("%player%", player.getName()));
+                        messageHandler.sendMessage(player, sleepInfoMsg);
                     } else { // Tell everyone in the world
                         for (Player players : world.getPlayers()) {
-                            messageHandler.sendMessage(players,
-                                    sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
-                                                    .replace("%count%", dfrmt.format(wsleeping))
-                                                    .replace("%count_needed%", dfrmt.format(countNeeded))
-                                                    .replace("%player%", player.getName()));
+                            messageHandler.sendMessage(players, sleepInfoMsg);
                         }
                     }
                     // Debug
@@ -252,8 +283,8 @@ public class Main extends JavaPlugin {
                     }
                     // Check if skip should be done
                     if (percentage >= skipPercentage && !skipping.contains(pWorld)) { // Skip
-                        broadcastDebug("Skipping...");
-
+                        messageHandler.broadcastDebug("Skipping...");
+                        worldLatestSleepAge.remove(pWorld);
                         String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
                         for (Player players : world.getPlayers()) {
                             messageHandler.sendMessage(players,
@@ -269,7 +300,7 @@ public class Main extends JavaPlugin {
                         if (!useAnimation) {
                             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
                                 public void run() {
-                                    broadcastDebug("Skipping after delay");
+                                    messageHandler.broadcastDebug("Skipping after delay");
                                     world.setTime(world.getTime()+24000-(world.getTime()%24000));
                                     world.setStorm(false);
                                     skipping.remove(pWorld);
@@ -286,21 +317,12 @@ public class Main extends JavaPlugin {
                                 }
                             }, 120L);
                         } else {
-                            broadcastDebug("Skipping with animation");
+                            messageHandler.broadcastDebug("Skipping with animation");
                         }
                     }
                 }
             }
         }, 1L);
-    }
-    
-    // Broadcast a debug message to all debug players
-    public void broadcastDebug(String message) {
-        for (UUID debugUUID : debugPlayers) {
-            Player player = Bukkit.getPlayer(debugUUID);
-            if (!player.isOnline()) continue;
-            player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + message);
-        }
     }
 
     public float onlinePlayers(String worldName) {

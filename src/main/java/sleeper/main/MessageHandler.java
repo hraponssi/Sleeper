@@ -6,11 +6,13 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.Set;
+import java.util.UUID;
 
 public class MessageHandler {
 
@@ -20,7 +22,7 @@ public class MessageHandler {
         this.plugin = plugin;
     }
 
-    Set<String> allowedTypes = Set.of("MINECRAFT", "MINIMESSAGE");
+    private Set<String> allowedTypes = Set.of("MINECRAFT", "MINIMESSAGE");
 
     // Setting value
     String formattingType = "MINECRAFT";
@@ -62,6 +64,21 @@ public class MessageHandler {
     public void sendActionbarMessage(Player player, String message) {
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
                 TextComponent.fromLegacyText(parseMessage(message)));
+    }
+    
+    // Broadcast a debug message to all debug players
+    public void broadcastDebug(String message) {
+        for (UUID debugUUID : plugin.debugPlayers) {
+            Player player = Bukkit.getPlayer(debugUUID);
+            if (!player.isOnline()) continue;
+            player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + message);
+        }
+    }
+    
+    // Send a debug message to a player, if they are in the debugPlayers list
+    public void sendDebug(Player player, String message) {
+        if (!plugin.debugPlayers.contains(player.getUniqueId())) return;
+        player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + message);
     }
 
     public void loadConfig(FileConfiguration config) {
