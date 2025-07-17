@@ -28,6 +28,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import sleeper.integrations.GSitHandler;
+import sleeper.integrations.AFKPlus;
 
 public class Main extends JavaPlugin {
     MessageFormatting messageFormatting;
@@ -37,6 +38,8 @@ public class Main extends JavaPlugin {
     
     // Soft dependency integrations with other plugin apis
     GSitHandler gSitHandler;
+    
+    AFKPlus afkPlus;
 
     DecimalFormat dfrmt = new DecimalFormat();
     Random random = new Random();
@@ -90,6 +93,9 @@ public class Main extends JavaPlugin {
         if (pm.getPlugin("GSit") != null) {
             gSitHandler = new GSitHandler(this, voting, messageFormatting);
             pm.registerEvents(gSitHandler, this);
+        }
+        if (pm.getPlugin("AFKPlus") != null) {
+            afkPlus = new AFKPlus();
         }
         setConfig();
         loadConfig();
@@ -314,7 +320,7 @@ public class Main extends JavaPlugin {
         float onlineIgnored = 0;
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (ignorePlayers.contains(p.getUniqueId()) || p.getWorld().getName() != worldName
-                    || p.getGameMode().equals(GameMode.SPECTATOR) || p.getGameMode().equals(GameMode.CREATIVE)) {
+                    || p.getGameMode().equals(GameMode.SPECTATOR) || p.getGameMode().equals(GameMode.CREATIVE) || (afkPlus != null && afkPlus.IsPlayerAFK(p))) {
                 onlineIgnored++;
             }
         }
