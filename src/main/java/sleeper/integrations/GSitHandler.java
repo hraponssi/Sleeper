@@ -16,7 +16,7 @@ import dev.geco.gsit.api.event.PlayerPoseEvent;
 import dev.geco.gsit.api.event.PlayerStopPoseEvent;
 
 import sleeper.main.Main;
-import sleeper.main.MessageFormatting;
+import sleeper.main.MessageHandler;
 import sleeper.main.Voting;
 
 public class GSitHandler implements Listener {
@@ -24,9 +24,9 @@ public class GSitHandler implements Listener {
 
     Main plugin;
     Voting voting;
-    MessageFormatting messageFormatting;
+    MessageHandler messageFormatting;
     
-    public GSitHandler (Main plugin, Voting voting, MessageFormatting messageFormatting) {
+    public GSitHandler (Main plugin, Voting voting, MessageHandler messageFormatting) {
         this.plugin = plugin;
         this.voting = voting;
         this.messageFormatting = messageFormatting;

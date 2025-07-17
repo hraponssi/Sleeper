@@ -17,13 +17,13 @@ public class EventHandlers implements Listener {
 
     Main plugin;
     Voting voting;
-    MessageFormatting messageFormatting;
+    MessageHandler messageHandler;
 
-    public EventHandlers(Main plugin, Voting voting, MessageFormatting messageFormatting) {
+    public EventHandlers(Main plugin, Voting voting, MessageHandler messageFormatting) {
         super();
         this.plugin = plugin;
         this.voting = voting;
-        this.messageFormatting = messageFormatting;
+        this.messageHandler = messageFormatting;
         dfrmt.setMaximumFractionDigits(2);
     }
 
@@ -53,9 +53,9 @@ public class EventHandlers implements Listener {
         int countNeeded = (int) Math.ceil(wonline * (plugin.skipPercentage / 100d));
         if (wsleeping > 0) plugin.sleepingWorlds.put(worldName, wsleeping - 1);
         if (!plugin.recentlySkipped.contains(worldName)) {
-            player.sendMessage(messageFormatting.parseMessage(plugin.sleepInfo
+            messageHandler.sendMessage(player, plugin.sleepInfo
                     .replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
-                    .replace("%count_needed%", dfrmt.format(countNeeded)).replace("%count%", dfrmt.format(wsleeping))));
+                    .replace("%count_needed%", dfrmt.format(countNeeded)).replace("%count%", dfrmt.format(wsleeping)));
         }
         plugin.getWorldSleepers(worldName).remove(player.getUniqueId());
     }
@@ -79,9 +79,9 @@ public class EventHandlers implements Listener {
             float wsleeping = plugin.sleepingWorlds.getOrDefault(worldName, 0f);
             float wonline = plugin.playersOnline.getOrDefault(worldName, 0f);
             int countNeeded = (int) Math.ceil(wonline * (plugin.skipPercentage / 100d));
-            player.sendMessage(messageFormatting.parseMessage(plugin.ignored
+            messageHandler.sendMessage(player, plugin.ignored
                     .replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
-                    .replace("%count_needed%", dfrmt.format(countNeeded)).replace("%count%", dfrmt.format(wsleeping))));
+                    .replace("%count_needed%", dfrmt.format(countNeeded)).replace("%count%", dfrmt.format(wsleeping)));
         }
     }
     

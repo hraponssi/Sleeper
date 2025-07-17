@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -12,20 +11,19 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class Voting {
 
     Main plugin;
 
-    MessageFormatting messageFormatting;
+    MessageHandler messageHandler;
 
     DecimalFormat dfrmt = new DecimalFormat();
 
-    public Voting(Main plugin, MessageFormatting messageFormatting) {
+    public Voting(Main plugin, MessageHandler messageFormatting) {
         this.plugin = plugin;
-        this.messageFormatting = messageFormatting;
+        this.messageHandler = messageFormatting;
         dfrmt.setMaximumFractionDigits(2);
     }
 
@@ -80,54 +78,54 @@ public class Voting {
 
     public void voteYes(Player player) {
         if (!player.hasPermission("sleeper.vote")) {
-            player.sendMessage(messageFormatting.parseMessage(plugin.noPermission));
+            messageHandler.sendMessage(player, plugin.noPermission);
             return;
         }
         if (!useVote) {
-            player.sendMessage(messageFormatting.parseMessage(voteNotEnabled));
+            messageHandler.sendMessage(player, voteNotEnabled);
             return;
         }
         if (voteStarts && !votingWorlds.contains(player.getWorld().getName())) {
             startVote(player);
         }
         if (!votingWorlds.contains(player.getWorld().getName())) {
-            player.sendMessage(messageFormatting.parseMessage(noVote));
+            messageHandler.sendMessage(player, noVote);
             return;
         }
         if (yesVotes.containsKey(player.getName())) {
-            player.sendMessage(messageFormatting.parseMessage(alreadyYes));
+            messageHandler.sendMessage(player, alreadyYes);
             return;
         }
         noVotes.remove(player.getName());
         yesVotes.put(player.getName(), player.getWorld().getName());
-        player.sendMessage(messageFormatting.parseMessage(votedYes));
+        messageHandler.sendMessage(player, votedYes);
         plugin.onlinePlayers(player.getWorld().getName());
         showVotes(player);
     }
 
     public void voteNo(Player player) {
         if (!player.hasPermission("sleeper.vote")) {
-            player.sendMessage(messageFormatting.parseMessage(plugin.noPermission));
+            messageHandler.sendMessage(player, plugin.noPermission);
             return;
         }
         if (!useVote) {
-            player.sendMessage(messageFormatting.parseMessage(voteNotEnabled));
+            messageHandler.sendMessage(player, voteNotEnabled);
             return;
         }
         if (voteStarts && !votingWorlds.contains(player.getWorld().getName())) {
             startVote(player);
         }
         if (!votingWorlds.contains(player.getWorld().getName())) {
-            player.sendMessage(messageFormatting.parseMessage(noVote));
+            messageHandler.sendMessage(player, noVote);
             return;
         }
         if (noVotes.containsKey(player.getName())) {
-            player.sendMessage(messageFormatting.parseMessage(alreadyNo));
+            messageHandler.sendMessage(player, alreadyNo);
             return;
         }
         yesVotes.remove(player.getName());
         noVotes.put(player.getName(), player.getWorld().getName());
-        player.sendMessage(messageFormatting.parseMessage(votedNo));
+        messageHandler.sendMessage(player, votedNo);
         plugin.onlinePlayers(player.getWorld().getName());
         showVotes(player);
     }
@@ -150,24 +148,24 @@ public class Voting {
 
     public void sendVoteMsg(Player player) {
         if (!useVote) {
-            player.sendMessage(messageFormatting.parseMessage(voteNotEnabled));
+            messageHandler.sendMessage(player, voteNotEnabled);
             return;
         }
-        player.sendMessage(messageFormatting.parseMessage(voteTitle));
+        player.sendMessage(messageHandler.parseMessage(voteTitle));
         TextComponent yesMessage = new TextComponent(
-                TextComponent.fromLegacyText(messageFormatting.parseMessage(voteYes)));
+                TextComponent.fromLegacyText(messageHandler.parseMessage(voteYes)));
         yesMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/sleep yes"));
         player.spigot().sendMessage(yesMessage);
         TextComponent noMessage = new TextComponent(
-                TextComponent.fromLegacyText(messageFormatting.parseMessage(voteNo)));
+                TextComponent.fromLegacyText(messageHandler.parseMessage(voteNo)));
         noMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/sleep no"));
         player.spigot().sendMessage(noMessage);
     }
 
     public void showVotes(Player player) {
-        player.sendMessage(messageFormatting
-                .parseMessage(listVotes.replace("%yes%", dfrmt.format(countYes(player.getWorld().getName())))
-                        .replace("%no%", dfrmt.format(countNo(player.getWorld().getName())))));
+        messageHandler.sendMessage(player, 
+                listVotes.replace("%yes%", dfrmt.format(countYes(player.getWorld().getName())))
+                        .replace("%no%", dfrmt.format(countNo(player.getWorld().getName()))));
     }
 
     public boolean hasVoted(Player player) {
@@ -198,7 +196,7 @@ public class Voting {
             if (plugin.skipping.contains(worldName)) continue;
             if (bossbarVoteCount) {
                 plugin.bar.setTitle(
-                        messageFormatting.parseMessage(listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
+                        messageHandler.parseMessage(listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
                                 .replace("%no%", dfrmt.format(countNo(worldName)))));
                 for (Player player : world.getPlayers()) {
                     if (plugin.bar.getPlayers().contains(player)) continue;
@@ -209,10 +207,8 @@ public class Voting {
                 tickCounter++;
                 if (tickCounter % 20 != 0) return;
                 for (Player player : world.getPlayers()) {
-                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
-                            TextComponent.fromLegacyText(messageFormatting
-                                    .parseMessage(listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
-                                            .replace("%no%", dfrmt.format(countNo(worldName))))));
+                    messageHandler.sendActionbarMessage(player, listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
+                                            .replace("%no%", dfrmt.format(countNo(worldName))));
                 }
             }
             if (votingWorldTimes.containsKey(worldName)) {
@@ -221,7 +217,7 @@ public class Voting {
                 if (timeLeft <= 0) {
                     votingWorldTimes.remove(worldName);
                     world.getPlayers().forEach(
-                            player -> plugin.sendMessage(player, messageFormatting.parseMessage(voteTimedOut)));
+                            player -> messageHandler.sendMessage(player, voteTimedOut));
                     endVote(worldName);
                 }
                 votingWorldTimes.replace(worldName, timeLeft);
@@ -238,7 +234,7 @@ public class Voting {
                     plugin.skipping.add(worldName);
                     plugin.recentlySkipped.add(worldName);
                     world.getPlayers()
-                            .forEach(player -> plugin.sendMessage(player, messageFormatting.parseMessage(skipByVote)));
+                            .forEach(player -> messageHandler.sendMessage(player, skipByVote));
                     plugin.getLogger().info("Skipping night by vote in " + worldName);
                 }
             }

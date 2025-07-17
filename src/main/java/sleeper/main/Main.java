@@ -8,7 +8,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Random;
 import java.util.UUID;
 
@@ -31,7 +30,7 @@ import sleeper.integrations.GSitHandler;
 import sleeper.integrations.AFKPlus;
 
 public class Main extends JavaPlugin {
-    MessageFormatting messageFormatting;
+    MessageHandler messageHandler;
     Voting voting;
     EventHandlers eventhandlers;
     Commands commands;
@@ -51,6 +50,9 @@ public class Main extends JavaPlugin {
     boolean broadcastSleepInfo = false;
     boolean delaySleep = false;
     public long delaySeconds = 0;
+    boolean actionbarMessages = false;
+    boolean persistentSleepInfo = false;
+    int persistenceTime = 30;
 
     boolean checkUpdates = true;
 
@@ -63,6 +65,8 @@ public class Main extends JavaPlugin {
     HashMap<String, Float> sleepingWorlds = new HashMap<>();
     HashMap<String, Float> playersOnline = new HashMap<>();
     HashMap<String, ArrayList<UUID>> worldSleepers = new HashMap<>();
+    HashMap<String, Integer> worldLatestSleepAge = new HashMap<>();
+    HashMap<String, String> worldLatestSleepMessage = new HashMap<>();
     BossBar bar = Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID);
 
     // Strings
@@ -83,15 +87,15 @@ public class Main extends JavaPlugin {
         int pluginId = 15317;
         Metrics metrics = new Metrics(this, pluginId);
         PluginManager pm = getServer().getPluginManager();
-        messageFormatting = new MessageFormatting(this);
-        voting = new Voting(this, messageFormatting);
-        eventhandlers = new EventHandlers(this, voting, messageFormatting);
-        commands = new Commands(this, voting, messageFormatting);
+        messageHandler = new MessageHandler(this);
+        voting = new Voting(this, messageHandler);
+        eventhandlers = new EventHandlers(this, voting, messageHandler);
+        commands = new Commands(this, voting, messageHandler);
         getCommand("sleep").setExecutor(commands);
         getCommand("sleep").setTabCompleter(new CommandCompletion());
         pm.registerEvents(eventhandlers, this);
         if (pm.getPlugin("GSit") != null) {
-            gSitHandler = new GSitHandler(this, voting, messageFormatting);
+            gSitHandler = new GSitHandler(this, voting, messageHandler);
             pm.registerEvents(gSitHandler, this);
         }
         if (pm.getPlugin("AFKPlus") != null) {
@@ -108,11 +112,12 @@ public class Main extends JavaPlugin {
                     long time = world.getTime();
                     world.setTime(time + skipSpeed);
                     world.setStorm(false);
-                    if (time >= 24000) {
+                    if (time%24000 < 2000) {
+                        /*
                         world.setTime(0);
                         time = 0;
-                    }
-                    if (time < 2000) {
+                        */
+                        messageHandler.broadcastDebug("Looks like it's time < 2000, stop the animation.");
                         skipping.remove(worldName);
                         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> { // Force sleeping count
                                                                                                 // to 0 in case it has
@@ -121,6 +126,15 @@ public class Main extends JavaPlugin {
                             recentlySkipped.remove(worldName);
                         }, 20L);
                     }
+                }
+            }
+            for (String worldName : worldLatestSleepAge.keySet()) {
+                int age = worldLatestSleepAge.get(worldName);
+                if (age < persistenceTime*20) {
+                    worldLatestSleepAge.replace(worldName, age+1);
+                } else {
+                    worldLatestSleepAge.remove(worldName);
+                    worldLatestSleepMessage.remove(worldName);
                 }
             }
             voting.tick();
@@ -132,8 +146,25 @@ public class Main extends JavaPlugin {
                 World world = Bukkit.getWorld(worldName);
                 long time = world.getTime();
                 // Just in case, clear world sleeper lists if it is the morning
-                if (time < 2000) {
+                if (time%24000 < 2000) {
                     worldSleepers.get(worldName).clear();
+                    worldLatestSleepAge.remove(worldName);
+                    worldLatestSleepMessage.remove(worldName);
+                }
+            }
+            for (String worldName : worldLatestSleepAge.keySet()) {
+                if (!worldLatestSleepMessage.containsKey(worldName)) return;
+                if (!persistentSleepInfo) return;
+                if (!actionbarMessages) return;
+                String msg = worldLatestSleepMessage.get(worldName);
+                if (!broadcastSleepInfo) {
+                    for (UUID uuid : worldSleepers.get(worldName)) {
+                        messageHandler.sendMessage(Bukkit.getPlayer(uuid), msg);
+                    }
+                } else {
+                    for (Player player : Bukkit.getWorld(worldName).getPlayers()) {
+                        messageHandler.sendMessage(player, msg);
+                    }
                 }
             }
         }, 2L, 20L);
@@ -157,14 +188,17 @@ public class Main extends JavaPlugin {
         broadcastSleepInfo = config.getBoolean("BroadcastSleepInfo");
         delaySeconds = config.getLong("DelaySeconds");
         delaySleep = config.getBoolean("DelaySleep");
+        actionbarMessages = config.getBoolean("ActionbarMessages");
+        persistentSleepInfo = config.getBoolean("PersistentSleepInfo");
+        persistenceTime = config.getInt("PersistenceTime");
         if (!delaySleep) {
             delaySeconds = 0;
         }
         checkUpdates = config.getBoolean("CheckForUpdates");
-        messageFormatting.loadConfig(config);
+        messageHandler.loadConfig(config);
         voting.loadConfig(config);
         commands.loadConfig(config);
-        gSitHandler.loadConfig(config);
+        if (gSitHandler != null) gSitHandler.loadConfig(config);
         if (checkUpdates) updateChecker();
     }
 
@@ -194,17 +228,12 @@ public class Main extends JavaPlugin {
         });
     }
 
-    // Message sending system to allow skipping sending blank messages
-    public void sendMessage(Player player, String message) {
-        if (!message.equals("")) player.sendMessage(message);
-    }
-
     public void sleep(Player player, boolean skipSleepCheck) {
-        String pWorld = player.getWorld().getName();
-        World world = Bukkit.getWorld(pWorld);
+        World world = player.getWorld();
+        String pWorld = world.getName();
+        Main plugin = this;
         if (!worldSleepers.keySet().contains(pWorld)) worldSleepers.put(pWorld, new ArrayList<>());
         if (ignorePlayers.contains(player.getUniqueId())) return;
-        Main plugin = this;
         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
                 if (player.isOnline() && (player.isSleeping() == true || skipSleepCheck)) {
@@ -214,6 +243,7 @@ public class Main extends JavaPlugin {
                     wsleeping++;
                     sleepingWorlds.put(pWorld, wsleeping);
                     worldSleepers.get(pWorld).add(player.getUniqueId());
+                    worldLatestSleepAge.put(pWorld, 0);
                     float percentage = (wsleeping / wonline) * 100;
                     int countNeeded = (int) Math.ceil(wonline * (skipPercentage / 100d));
                     // Replace e.g. infinity percentage with 100%, if ignored players slept
@@ -233,21 +263,16 @@ public class Main extends JavaPlugin {
                                 + voting.votingWorlds.toString());
                     }
                     // Sleepinfo message
+                    String sleepInfoMsg = sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
+                            .replace("%count%", dfrmt.format(wsleeping))
+                            .replace("%count_needed%", dfrmt.format(countNeeded))
+                            .replace("%player%", player.getName());
+                    worldLatestSleepMessage.put(pWorld, sleepInfoMsg);
                     if (!broadcastSleepInfo) {
-                        sendMessage(player,
-                                messageFormatting
-                                        .parseMessage(sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
-                                                .replace("%count%", dfrmt.format(wsleeping))
-                                                .replace("%count_needed%", dfrmt.format(countNeeded))
-                                                .replace("%player%", player.getName())));
+                        messageHandler.sendMessage(player, sleepInfoMsg);
                     } else { // Tell everyone in the world
                         for (Player players : world.getPlayers()) {
-                            sendMessage(players,
-                                    messageFormatting
-                                            .parseMessage(sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
-                                                    .replace("%count%", dfrmt.format(wsleeping))
-                                                    .replace("%count_needed%", dfrmt.format(countNeeded))
-                                                    .replace("%player%", player.getName())));
+                            messageHandler.sendMessage(players, sleepInfoMsg);
                         }
                     }
                     // Debug
@@ -264,18 +289,15 @@ public class Main extends JavaPlugin {
                     }
                     // Check if skip should be done
                     if (percentage >= skipPercentage && !skipping.contains(pWorld)) { // Skip
-                        if (debugPlayers.contains(player.getUniqueId())) {
-                            player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping...");
-                        }
-
+                        messageHandler.broadcastDebug("Skipping...");
+                        worldLatestSleepAge.remove(pWorld);
                         String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
                         for (Player players : world.getPlayers()) {
-                            sendMessage(players,
-                                    messageFormatting.parseMessage(
-                                            chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
+                            messageHandler.sendMessage(players,
+                                    chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
                                                     .replace("%count%", dfrmt.format(wsleeping))
                                                     .replace("%count_needed%", dfrmt.format(countNeeded))
-                                                    .replace("%player%", player.getName())));
+                                                    .replace("%player%", player.getName()));
                         }
 
                         worldSleepers.get(pWorld).clear();
@@ -284,11 +306,8 @@ public class Main extends JavaPlugin {
                         if (!useAnimation) {
                             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
                                 public void run() {
-                                    if (player.isOnline() && debugPlayers.contains(player.getUniqueId())) {
-                                        player.sendMessage(
-                                                ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping after delay");
-                                    }
-                                    world.setTime(0);
+                                    messageHandler.broadcastDebug("Skipping after delay");
+                                    world.setTime(world.getTime()+24000-(world.getTime()%24000));
                                     world.setStorm(false);
                                     skipping.remove(pWorld);
                                     Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
@@ -304,10 +323,7 @@ public class Main extends JavaPlugin {
                                 }
                             }, 120L);
                         } else {
-                            if (debugPlayers.contains(player.getUniqueId())) {
-                                player.sendMessage(
-                                        ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Skipping with animation");
-                            }
+                            messageHandler.broadcastDebug("Skipping with animation");
                         }
                     }
                 }
