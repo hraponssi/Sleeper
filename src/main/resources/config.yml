@@ -37,6 +37,8 @@ LimitedVoteTime: false
 # Plugin integrations
 # GSit
 GSitPoseToSleep: false
+# AFK plugins (AFK+)
+IgnoreAFKPlayers: true
 
 # General Messages
 SleepInfo: "&aSleep > &7%percent% (%count%) out of a minimum of 25% sleeping."

@@ -33,10 +33,6 @@
 		    <id>jitpack.io</id>
 		    <url>https://jitpack.io</url>
 		</repository>
-        <repository>
-            <id>lapismc-repo</id>
-            <url>https://maven.lapismc.net/repository/maven/</url>
-        </repository>
 	</repositories>
 	
 	<dependencies>
@@ -68,12 +64,12 @@
 		    <version>2.4.2</version>
 		    <scope>provided</scope>
 		</dependency>
-        <dependency>
-            <groupId>net.lapismc</groupId>
-            <artifactId>AFKPlus</artifactId>
-            <version>3.4.5</version>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+	      <groupId>net.lapismc</groupId>
+        <artifactId>AFKPlus</artifactId>
+        <version>3.4.1</version>
+        <scope>provided</scope>
+    </dependency>
 	</dependencies>
 	
 	<build>

@@ -37,7 +37,6 @@ public class Main extends JavaPlugin {
     
     // Soft dependency integrations with other plugin apis
     GSitHandler gSitHandler;
-    
     AFKPlus afkPlus;
 
     DecimalFormat dfrmt = new DecimalFormat();
@@ -53,6 +52,8 @@ public class Main extends JavaPlugin {
     boolean actionbarMessages = false;
     boolean persistentSleepInfo = false;
     int persistenceTime = 30;
+    
+    boolean ignoreAFKPlayers = true;
 
     boolean checkUpdates = true;
 
@@ -195,6 +196,7 @@ public class Main extends JavaPlugin {
             delaySeconds = 0;
         }
         checkUpdates = config.getBoolean("CheckForUpdates");
+        ignoreAFKPlayers = config.getBoolean("IgnoreAFKPlayers");
         messageHandler.loadConfig(config);
         voting.loadConfig(config);
         commands.loadConfig(config);
@@ -336,7 +338,8 @@ public class Main extends JavaPlugin {
         float onlineIgnored = 0;
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (ignorePlayers.contains(p.getUniqueId()) || p.getWorld().getName() != worldName
-                    || p.getGameMode().equals(GameMode.SPECTATOR) || p.getGameMode().equals(GameMode.CREATIVE) || (afkPlus != null && afkPlus.IsPlayerAFK(p))) {
+                    || p.getGameMode().equals(GameMode.SPECTATOR) || p.getGameMode().equals(GameMode.CREATIVE)
+                    || (ignoreAFKPlayers && afkPlus != null && afkPlus.IsPlayerAFK(p))) {
                 onlineIgnored++;
             }
         }
