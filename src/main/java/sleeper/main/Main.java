@@ -339,13 +339,18 @@ public class Main extends JavaPlugin {
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (ignorePlayers.contains(p.getUniqueId()) || p.getWorld().getName() != worldName
                     || p.getGameMode().equals(GameMode.SPECTATOR) || p.getGameMode().equals(GameMode.CREATIVE)
-                    || (ignoreAFKPlayers && afkPlus != null && afkPlus.IsPlayerAFK(p))) {
+                    || (ignoreAFKPlayers && isAFK(p))) {
                 onlineIgnored++;
             }
         }
         float total = Bukkit.getOnlinePlayers().size() - onlineIgnored;
         playersOnline.put(worldName, total);
         return total;
+    }
+    
+    public boolean isAFK(Player player) {
+        if (afkPlus != null && afkPlus.IsPlayerAFK(player)) return true;
+        return false;
     }
     
     public HashMap<String, Float> getPlayersOnline() {
