@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 import org.bstats.bukkit.Metrics;
@@ -26,6 +27,8 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.earth2me.essentials.Essentials;
+
 import sleeper.integrations.GSitHandler;
 import sleeper.integrations.AFKPlus;
 
@@ -38,6 +41,7 @@ public class Main extends JavaPlugin {
     // Soft dependency integrations with other plugin apis
     GSitHandler gSitHandler;
     AFKPlus afkPlus;
+    Essentials essentials;
 
     DecimalFormat dfrmt = new DecimalFormat();
     Random random = new Random();
@@ -95,12 +99,24 @@ public class Main extends JavaPlugin {
         getCommand("sleep").setExecutor(commands);
         getCommand("sleep").setTabCompleter(new CommandCompletion());
         pm.registerEvents(eventhandlers, this);
+        StringJoiner integrationsFound = new StringJoiner(", ", "", ".");
         if (pm.getPlugin("GSit") != null) {
             gSitHandler = new GSitHandler(this, voting, messageHandler);
             pm.registerEvents(gSitHandler, this);
+            integrationsFound.add("GSit");
         }
         if (pm.getPlugin("AFKPlus") != null) {
             afkPlus = new AFKPlus();
+            integrationsFound.add("AFKPlus");
+        }
+        if (pm.getPlugin("Essentials") != null) {
+            essentials = (Essentials) pm.getPlugin("Essentials");
+            integrationsFound.add("Essentials");
+        }
+        if (integrationsFound.length() != 0) {
+            getLogger().info("Loaded integrations for: " + integrationsFound.toString());
+        } else {
+            getLogger().info("Found no plugin integrations.");
         }
         setConfig();
         loadConfig();
@@ -350,6 +366,7 @@ public class Main extends JavaPlugin {
     
     public boolean isAFK(Player player) {
         if (afkPlus != null && afkPlus.IsPlayerAFK(player)) return true;
+        if (essentials != null && essentials.getUser(player).isAfk()) return true;
         return false;
     }
     
