@@ -37,7 +37,7 @@ LimitedVoteTime: false
 # Plugin integrations
 # GSit
 GSitPoseToSleep: false
-# AFK plugins (AFK+)
+# AFK plugins (AFK+, Essentials)
 IgnoreAFKPlayers: true
 
 # General Messages
