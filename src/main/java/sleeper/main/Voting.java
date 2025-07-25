@@ -152,11 +152,11 @@ public class Voting {
             return;
         }
         player.sendMessage(messageHandler.parseMessage(voteTitle));
-        Component yesMessage = messageHandler.parseMessage(voteYes);
-        yesMessage.clickEvent(ClickEvent.runCommand("/sleep yes"));
+        Component yesMessage = messageHandler.parseMessage(voteYes)
+                .clickEvent(ClickEvent.runCommand("/sleep yes"));
         player.sendMessage(yesMessage);
-        Component noMessage = messageHandler.parseMessage(voteNo);
-        noMessage.clickEvent(ClickEvent.runCommand("/sleep no"));
+        Component noMessage = messageHandler.parseMessage(voteNo)
+                .clickEvent(ClickEvent.runCommand("/sleep no"));
         player.sendMessage(noMessage);
     }
 
