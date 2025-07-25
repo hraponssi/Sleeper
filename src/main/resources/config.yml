@@ -4,9 +4,8 @@
 CheckForUpdates: true
 
 # Available serializers:
-# minecraft - "&c&lExample Text"
 # minimessage - "<red><bold>Example Text"
-FormattingType: "minecraft"
+FormattingType: "minimessage"
 
 # Main settings
 UseAnimation: true

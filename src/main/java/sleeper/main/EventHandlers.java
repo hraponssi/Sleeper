@@ -10,7 +10,6 @@ import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.scheduler.BukkitScheduler;
 
 public class EventHandlers implements Listener {
     DecimalFormat dfrmt = new DecimalFormat();
@@ -30,9 +29,8 @@ public class EventHandlers implements Listener {
     @EventHandler
     public void onBedEnter(PlayerBedEnterEvent event) {
         Player player = event.getPlayer();
-        BukkitScheduler scheduler = Bukkit.getScheduler();
         // Delay sleep if configured to do so
-        scheduler.runTaskLater(plugin, () -> {
+        Bukkit.getServer().getGlobalRegionScheduler().runDelayed(this.plugin, ScheduledTask -> {
             if (!player.isSleeping()) return;
             if (voting.blockBedsAfterVoting && voting.votingWorlds.contains(player.getWorld().getName())
                     && voting.hasVoted(player)) {

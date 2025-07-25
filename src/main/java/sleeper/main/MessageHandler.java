@@ -1,13 +1,11 @@
 package sleeper.main;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
@@ -22,22 +20,30 @@ public class MessageHandler {
         this.plugin = plugin;
     }
 
-    private Set<String> allowedTypes = Set.of("MINECRAFT", "MINIMESSAGE");
+    private Set<String> allowedTypes = Set.of("MINIMESSAGE");
 
     // Setting value
-    String formattingType = "MINECRAFT";
+    String formattingType = "MINIMESSAGE";
 
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
 
-    public String parseMessage(String message) {
+    public String parseMessageString(String message) {
         switch (formattingType) {
-        case "MINECRAFT":
-            return ChatColor.translateAlternateColorCodes('&', message);
         case "MINIMESSAGE":
             Component component = miniMessage.deserialize(message);
             return LegacyComponentSerializer.legacySection().serialize(component);
         default:
             return message;
+        }
+    }
+    
+    public Component parseMessage(String message) {
+        switch (formattingType) {
+        case "MINIMESSAGE":
+            Component component = miniMessage.deserialize(message);
+            return component;
+        default:
+            return Component.text(message);
         }
     }
     
@@ -62,8 +68,7 @@ public class MessageHandler {
     }
     
     public void sendActionbarMessage(Player player, String message) {
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
-                TextComponent.fromLegacyText(parseMessage(message)));
+        player.sendActionBar(parseMessage(message));
     }
     
     // Broadcast a debug message to all debug players
@@ -71,14 +76,16 @@ public class MessageHandler {
         for (UUID debugUUID : plugin.debugPlayers) {
             Player player = Bukkit.getPlayer(debugUUID);
             if (!player.isOnline()) continue;
-            player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + message);
+            player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                    .append(Component.text(message).color(NamedTextColor.GRAY)));
         }
     }
     
     // Send a debug message to a player, if they are in the debugPlayers list
     public void sendDebug(Player player, String message) {
         if (!plugin.debugPlayers.contains(player.getUniqueId())) return;
-        player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + message);
+        player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                .append(Component.text(message).color(NamedTextColor.GRAY)));
     }
 
     public void loadConfig(FileConfiguration config) {

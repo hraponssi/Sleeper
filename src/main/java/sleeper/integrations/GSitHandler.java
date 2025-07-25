@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import dev.geco.gsit.api.GSitAPI;
 import dev.geco.gsit.api.event.PlayerPoseEvent;
@@ -45,9 +44,8 @@ public class GSitHandler implements Listener {
         Pose pose = event.getPose().getPose();
         if (pose != Pose.SLEEPING) return;
         // The player entered a sleep pose, do the same as with normal sleeping
-        BukkitScheduler scheduler = Bukkit.getScheduler();
         // Delay sleep if configured to do so
-        scheduler.runTaskLater(plugin, () -> {
+        Bukkit.getServer().getGlobalRegionScheduler().runDelayed(this.plugin, ScheduledTask -> {
             var latestPose = GSitAPI.getPoseByPlayer(player).getPose();
             if (latestPose == null || latestPose != Pose.SLEEPING) return;
             if (voting.blockBedsAfterVoting && voting.getVotingWorlds().contains(player.getWorld().getName())

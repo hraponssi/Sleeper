@@ -5,6 +5,7 @@ author: Hraponssi
 main: sleeper.main.Main
 softdepend: [GSit, AFKPlus, Essentials]
 api-version: 1.13
+folia-supported: true
 commands:
   sleep:
     description: Run Sleeper subcommands

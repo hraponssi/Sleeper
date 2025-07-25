@@ -4,13 +4,15 @@ import java.util.StringJoiner;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 public class Commands implements CommandExecutor {
     Main plugin;
@@ -128,32 +130,37 @@ public class Commands implements CommandExecutor {
             case "debug": // A bunch of debug data
                 if (!hasPermission(sender, "sleeper.data")) break;
                 if (plugin.debugPlayers.contains(player.getUniqueId())) {
-                    player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Debug disabled");
+                    player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                            .append(Component.text("Debug disabled").color(NamedTextColor.GRAY)));
                     plugin.debugPlayers.remove(player.getUniqueId());
                 } else {
-                    player.sendMessage(ChatColor.YELLOW + "DEBUG: " + ChatColor.GRAY + "Debug enabled");
+                    player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                            .append(Component.text("Debug enabled").color(NamedTextColor.GRAY)));
                     plugin.debugPlayers.add(player.getUniqueId());
                 }
 
                 // Send all kinds of current data
-                player.sendMessage(ChatColor.RED + "Sleep data:");
+                player.sendMessage(Component.text("Sleep data:").color(NamedTextColor.RED));
                 if (player.getGameMode().equals(GameMode.SPECTATOR) || player.getGameMode().equals(GameMode.CREATIVE)) {
-                    player.sendMessage(ChatColor.GRAY
-                            + "Note: you will be ignored from sleep calculations in spectator or creative mode.");
+                    player.sendMessage(Component
+                            .text("Note: you will be ignored from sleep calculations in spectator or creative mode.")
+                            .color(NamedTextColor.GRAY));
                 }
-                player.sendMessage(ChatColor.GREEN + "Sleeping per world: ");
+                player.sendMessage(Component.text("Sleeping per world: ").color(NamedTextColor.GREEN));
                 plugin.sleepingWorlds.keySet().forEach(world -> player
-                        .sendMessage(ChatColor.GRAY + world + " - " + plugin.sleepingWorlds.get(world).toString()));
-                player.sendMessage(ChatColor.GREEN + "Latest 'online' player count per world: ");
+                        .sendMessage(Component.text(world + " - " + plugin.sleepingWorlds.get(world).toString()).color(NamedTextColor.GRAY)));
+                player.sendMessage(Component.text("Latest 'online' player count per world: ").color(NamedTextColor.GREEN));
                 plugin.playersOnline.keySet().forEach(world -> player
-                        .sendMessage(ChatColor.GRAY + world + " - " + plugin.playersOnline.get(world).toString()));
-                player.sendMessage(ChatColor.GREEN + "True online player count: " + ChatColor.GRAY
-                        + Bukkit.getOnlinePlayers().size());
-                player.sendMessage(ChatColor.GREEN + "Skipping: " + ChatColor.GRAY + plugin.skipping.toString());
+                        .sendMessage(Component.text(world + " - " + plugin.playersOnline.get(world).toString()).color(NamedTextColor.GRAY)));
+                player.sendMessage(Component.text("True online player count: ").color(NamedTextColor.GREEN)
+                        .append(Component.text(Bukkit.getOnlinePlayers().size()).color(NamedTextColor.GRAY)));
+                player.sendMessage(Component.text("Skipping: ").color(NamedTextColor.GREEN)
+                        .append(Component.text(plugin.skipping.toString()).color(NamedTextColor.GRAY)));
                 int onlineIgnored = plugin.getOnlineIgnorers().size();
-                player.sendMessage(ChatColor.GREEN + "Ignored player count: " + ChatColor.GRAY + onlineIgnored);
-                player.sendMessage(ChatColor.GREEN + "Ignoring players: ");
-                plugin.getOnlineIgnorers().forEach(p -> player.sendMessage(ChatColor.GRAY + p.getDisplayName()));
+                player.sendMessage(Component.text("Ignored player count: ").color(NamedTextColor.GREEN)
+                        .append(Component.text(onlineIgnored).color(NamedTextColor.GRAY)));
+                player.sendMessage(Component.text("Ignoring players: ").color(NamedTextColor.GREEN));
+                plugin.getOnlineIgnorers().forEach(p -> player.sendMessage(Component.text(p.getName()).color(NamedTextColor.GRAY)));
                 break;
             default:
                 sender.sendMessage(messageHandler.parseMessage(playerHelpMsg(player)));

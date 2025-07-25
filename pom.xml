@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>Sleeper</groupId>
-	<artifactId>Sleeper</artifactId>
+	<artifactId>Sleeper-Folia</artifactId>
 	<version>1.9.0</version>
 	
 	<properties>
@@ -45,11 +45,11 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>spigot-api</artifactId>
-			<version>1.21.7-R0.1-SNAPSHOT</version>
-			<scope>provided</scope>
-		</dependency>
+    		<groupId>dev.folia</groupId>
+    		<artifactId>folia-api</artifactId>
+    		<version>1.21.4-R0.1-SNAPSHOT</version>
+    		<scope>provided</scope>
+    	</dependency>
 		<dependency>
 			<groupId>org.bstats</groupId>
 			<artifactId>bstats-bukkit</artifactId>
