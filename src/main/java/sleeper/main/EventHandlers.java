@@ -39,7 +39,7 @@ public class EventHandlers implements Listener {
                 return;
             }
             plugin.sleep(player, false);
-        }, 20L * plugin.delaySeconds);
+        }, 20L * plugin.delaySeconds + 1L); // Base of 1 tick delay because 0 isnt accepted by the scheduler
     }
 
     @EventHandler
