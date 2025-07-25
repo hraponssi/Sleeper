@@ -239,15 +239,12 @@ public class Main extends JavaPlugin {
     }
 
     public void updateChecker() {
-        // Disabled for now as this Folia branch isn't the main release
-        /*
         new UpdateChecker(this, 102406).getVersion(version -> {
-            if (!this.getDescription().getVersion().equals(version)) {
+            if (!this.getPluginMeta().getVersion().equals(version)) {
                 getLogger().warning("There is a new update available. New version is " + version + " and you are on "
-                        + this.getDescription().getVersion() + ".");
+                        + this.getPluginMeta().getVersion() + ".");
             }
         });
-        */
     }
 
     public void sleep(Player player, boolean skipSleepCheck) {

@@ -1,7 +1,8 @@
 # Default config for Sleeper
 
 # Plugin settings
-CheckForUpdates: true
+# The update checker is currently disabled for the Folia branch as it is not the main release
+CheckForUpdates: false
 
 # Available serializers:
 # minimessage - "<red><bold>Example Text"
