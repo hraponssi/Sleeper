@@ -10,8 +10,9 @@ import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 
 public class Voting {
 
@@ -151,15 +152,14 @@ public class Voting {
             messageHandler.sendMessage(player, voteNotEnabled);
             return;
         }
-        player.sendMessage(messageHandler.parseMessage(voteTitle));
-        TextComponent yesMessage = new TextComponent(
-                TextComponent.fromLegacyText(messageHandler.parseMessage(voteYes)));
-        yesMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/sleep yes"));
-        player.spigot().sendMessage(yesMessage);
-        TextComponent noMessage = new TextComponent(
-                TextComponent.fromLegacyText(messageHandler.parseMessage(voteNo)));
-        noMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/sleep no"));
-        player.spigot().sendMessage(noMessage);
+        Audience audience = plugin.adventure().player(player);
+        audience.sendMessage(messageHandler.parseMessage(voteTitle));
+        Component yesMessage = messageHandler.parseMessage(voteYes)
+                .clickEvent(ClickEvent.runCommand("/sleep yes"));
+        audience.sendMessage(yesMessage);
+        Component noMessage = messageHandler.parseMessage(voteNo)
+                .clickEvent(ClickEvent.runCommand("/sleep no"));
+        audience.sendMessage(noMessage);
     }
 
     public void showVotes(Player player) {
@@ -196,7 +196,7 @@ public class Voting {
             if (plugin.skipping.contains(worldName)) continue;
             if (bossbarVoteCount) {
                 plugin.bar.setTitle(
-                        messageHandler.parseMessage(listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
+                        messageHandler.parseMessageString(listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
                                 .replace("%no%", dfrmt.format(countNo(worldName)))));
                 for (Player player : world.getPlayers()) {
                     if (plugin.bar.getPlayers().contains(player)) continue;

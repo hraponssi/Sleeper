@@ -10,18 +10,19 @@ import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.scheduler.BukkitScheduler;
 
 public class EventHandlers implements Listener {
     DecimalFormat dfrmt = new DecimalFormat();
 
     Main plugin;
+    Scheduler scheduler;
     Voting voting;
     MessageHandler messageHandler;
 
-    public EventHandlers(Main plugin, Voting voting, MessageHandler messageFormatting) {
+    public EventHandlers(Main plugin, Scheduler scheduler, Voting voting, MessageHandler messageFormatting) {
         super();
         this.plugin = plugin;
+        this.scheduler = scheduler;
         this.voting = voting;
         this.messageHandler = messageFormatting;
         dfrmt.setMaximumFractionDigits(2);
@@ -30,9 +31,8 @@ public class EventHandlers implements Listener {
     @EventHandler
     public void onBedEnter(PlayerBedEnterEvent event) {
         Player player = event.getPlayer();
-        BukkitScheduler scheduler = Bukkit.getScheduler();
         // Delay sleep if configured to do so
-        scheduler.runTaskLater(plugin, () -> {
+        scheduler.runDelayedTask(() -> {
             if (!player.isSleeping()) return;
             if (voting.blockBedsAfterVoting && voting.votingWorlds.contains(player.getWorld().getName())
                     && voting.hasVoted(player)) {
@@ -41,7 +41,7 @@ public class EventHandlers implements Listener {
                 return;
             }
             plugin.sleep(player, false);
-        }, 20L * plugin.delaySeconds);
+        }, 20L * plugin.delaySeconds + 1L); // Base of 1 tick delay because 0 isnt accepted by the scheduler
     }
 
     @EventHandler

@@ -1,10 +1,9 @@
 package sleeper.main;
 
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -29,7 +28,19 @@ public class MessageHandler {
 
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
 
-    public String parseMessage(String message) {
+    public Component parseMessage(String message) {
+        switch (formattingType) {
+        case "MINECRAFT":
+            return LegacyComponentSerializer.legacyAmpersand().deserialize(message);
+        case "MINIMESSAGE":
+            Component component = miniMessage.deserialize(message);
+            return component;
+        default:
+            return Component.text(message);
+        }
+    }
+    
+    public String parseMessageString(String message) {
         switch (formattingType) {
         case "MINECRAFT":
             return ChatColor.translateAlternateColorCodes('&', message);
@@ -47,7 +58,8 @@ public class MessageHandler {
         if (plugin.actionbarMessages) {
             sendActionbarMessage(player, message);
         } else {
-            player.sendMessage(parseMessage(message));
+            Audience audience = plugin.adventure().player(player);
+            audience.sendMessage(parseMessage(message));
         }
     }
     
@@ -62,8 +74,8 @@ public class MessageHandler {
     }
     
     public void sendActionbarMessage(Player player, String message) {
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
-                TextComponent.fromLegacyText(parseMessage(message)));
+        Audience audience = plugin.adventure().player(player);
+        audience.sendActionBar(parseMessage(message));
     }
     
     // Broadcast a debug message to all debug players

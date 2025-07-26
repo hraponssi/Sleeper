@@ -4,7 +4,7 @@
 
 	<groupId>Sleeper</groupId>
 	<artifactId>Sleeper</artifactId>
-	<version>1.9.0</version>
+	<version>1.10.0</version>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,11 +45,11 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>spigot-api</artifactId>
-			<version>1.21.7-R0.1-SNAPSHOT</version>
-			<scope>provided</scope>
-		</dependency>
+    		<groupId>dev.folia</groupId>
+    		<artifactId>folia-api</artifactId>
+    		<version>1.21.6-R0.1-SNAPSHOT</version>
+    		<scope>provided</scope>
+    	</dependency>
 		<dependency>
 			<groupId>org.bstats</groupId>
 			<artifactId>bstats-bukkit</artifactId>
