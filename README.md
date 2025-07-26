@@ -4,7 +4,7 @@
 
 Customize skipping the night with an animation or voting.
 
-Requires Java 17.
+Requires Java 17. Supports Folia.
 
 ### Features of Sleeper
 
