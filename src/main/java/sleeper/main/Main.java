@@ -22,12 +22,15 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import com.earth2me.essentials.Essentials;
 
-import io.papermc.paper.plugin.configuration.PluginMeta;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import sleeper.integrations.GSitHandler;
@@ -38,6 +41,7 @@ public class Main extends JavaPlugin {
     Voting voting;
     EventHandlers eventhandlers;
     Commands commands;
+    Scheduler scheduler;
     
     // Soft dependency integrations with other plugin apis
     GSitHandler gSitHandler;
@@ -46,6 +50,8 @@ public class Main extends JavaPlugin {
 
     DecimalFormat dfrmt = new DecimalFormat();
     Random random = new Random();
+    
+    private BukkitAudiences adventure;
 
     // Setting values
     boolean useAnimation = true;
@@ -82,27 +88,40 @@ public class Main extends JavaPlugin {
     String ignored = "&cSleep > &7You are still being ignored for sleep calculations!";
     String noPermission = "&cYou don't have permission for that.";
 
+    public @NonNull BukkitAudiences adventure() {
+        if(this.adventure == null) {
+          throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
+        }
+        return this.adventure;
+    }
+    
     public void onDisable() {
-        PluginMeta pdfFile = this.getPluginMeta();
+        if (this.adventure != null) {
+            this.adventure.close();
+            this.adventure = null;
+        }
+        PluginDescriptionFile pdfFile = this.getDescription();
         getLogger().info(pdfFile.getName() + " Has Been Disabled!");
     }
 
     public void onEnable() {
-        PluginMeta pdfFile = this.getPluginMeta();
+        PluginDescriptionFile pdfFile = this.getDescription();
         getLogger().info(pdfFile.getName() + " Version " + pdfFile.getVersion() + " Has Been Enabled!");
+        this.adventure = BukkitAudiences.create(this);
         int pluginId = 15317;
         Metrics metrics = new Metrics(this, pluginId);
         PluginManager pm = getServer().getPluginManager();
+        scheduler = new Scheduler(this);
         messageHandler = new MessageHandler(this);
         voting = new Voting(this, messageHandler);
-        eventhandlers = new EventHandlers(this, voting, messageHandler);
+        eventhandlers = new EventHandlers(this, scheduler, voting, messageHandler);
         commands = new Commands(this, voting, messageHandler);
         getCommand("sleep").setExecutor(commands);
         getCommand("sleep").setTabCompleter(new CommandCompletion());
         pm.registerEvents(eventhandlers, this);
         StringJoiner integrationsFound = new StringJoiner(", ", "", ".");
         if (pm.getPlugin("GSit") != null) {
-            gSitHandler = new GSitHandler(this, voting, messageHandler);
+            gSitHandler = new GSitHandler(this, scheduler, voting, messageHandler);
             pm.registerEvents(gSitHandler, this);
             integrationsFound.add("GSit");
         }
@@ -123,7 +142,7 @@ public class Main extends JavaPlugin {
         loadConfig();
         dfrmt.setMaximumFractionDigits(2);
         // Every tick
-        getServer().getGlobalRegionScheduler().runAtFixedRate(this, task -> {
+        scheduler.runRepeatingTask(() -> {
             for (String worldName : new ArrayList<>(skipping)) {
                 if (useAnimation) {
                     World world = Bukkit.getWorld(worldName);
@@ -137,9 +156,7 @@ public class Main extends JavaPlugin {
                         */
                         messageHandler.broadcastDebug("Looks like it's time < 2000, stop the animation.");
                         skipping.remove(worldName);
-                        Bukkit.getServer().getGlobalRegionScheduler().runDelayed(this, delayTask -> { // Force sleeping count
-                                                                                                // to 0 in case it has
-                                                                                                // become wrong
+                        scheduler.runDelayedTask(() -> { // Force sleeping count to 0 in case it has become wrong
                             sleepingWorlds.put(worldName, 0f);
                             recentlySkipped.remove(worldName);
                         }, 20L);
@@ -158,7 +175,7 @@ public class Main extends JavaPlugin {
             voting.tick();
         }, 1L, 1L);
         // Every second
-        getServer().getGlobalRegionScheduler().runAtFixedRate(this, task -> {
+        scheduler.runRepeatingTask(() -> {
             // Go over every world
             for (String worldName : worldSleepers.keySet()) {
                 World world = Bukkit.getWorld(worldName);
@@ -239,21 +256,22 @@ public class Main extends JavaPlugin {
     }
 
     public void updateChecker() {
-        new UpdateChecker(this, 102406).getVersion(version -> {
-            if (!this.getPluginMeta().getVersion().equals(version)) {
+        new UpdateChecker(this, scheduler, 102406).getVersion(version -> {
+            if (!this.getDescription().getVersion().equals(version)) {
                 getLogger().warning("There is a new update available. New version is " + version + " and you are on "
-                        + this.getPluginMeta().getVersion() + ".");
+                        + this.getDescription().getVersion() + ".");
             }
         });
     }
 
     public void sleep(Player player, boolean skipSleepCheck) {
+        Audience audience = adventure().player(player);
         World world = player.getWorld();
         String pWorld = world.getName();
         Main plugin = this;
         if (!worldSleepers.keySet().contains(pWorld)) worldSleepers.put(pWorld, new ArrayList<>());
         if (ignorePlayers.contains(player.getUniqueId())) return;
-        Bukkit.getServer().getGlobalRegionScheduler().runDelayed(this, ScheduledTask -> {
+        scheduler.runDelayedTask(() -> {
             if (player.isOnline() && (player.isSleeping() == true || skipSleepCheck)) {
                 float wonline = onlinePlayers(pWorld);
                 float wsleeping = sleepingWorlds.getOrDefault(player.getWorld().getName(), 0f);
@@ -268,17 +286,17 @@ public class Main extends JavaPlugin {
                 if (percentage > 100) percentage = 100;
                 // Debug
                 if (debugPlayers.contains(player.getUniqueId())) {
-                    player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                    audience.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
                             .append(Component.text("eventhandlers.sleeping: ").color(NamedTextColor.GRAY)));
                     sleepingWorlds.keySet().forEach(
-                            lworld -> player.sendMessage(Component.text(sleepingWorlds.get(lworld).toString()).color(NamedTextColor.GRAY)));
-                    player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                            lworld -> audience.sendMessage(Component.text(sleepingWorlds.get(lworld).toString()).color(NamedTextColor.GRAY)));
+                    audience.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
                             .append(Component.text("eventhandlers.playersOnline: ").color(NamedTextColor.GRAY)));
                     playersOnline.keySet().forEach(
-                            lworld -> player.sendMessage(Component.text(playersOnline.get(lworld).toString()).color(NamedTextColor.GRAY)));
-                    player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                            lworld -> audience.sendMessage(Component.text(playersOnline.get(lworld).toString()).color(NamedTextColor.GRAY)));
+                    audience.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
                             .append(Component.text("skipping: " + skipping.toString()).color(NamedTextColor.GRAY)));
-                    player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                    audience.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
                             .append(Component.text("voting: " + voting.votingWorlds.toString()).color(NamedTextColor.GRAY)));
                 }
                 // Sleepinfo message
@@ -321,12 +339,12 @@ public class Main extends JavaPlugin {
                     skipping.add(pWorld);
                     recentlySkipped.add(pWorld);
                     if (!useAnimation) {
-                        Bukkit.getServer().getGlobalRegionScheduler().runDelayed(plugin, delayTask -> {
+                        scheduler.runDelayedTask(() -> {
                             messageHandler.broadcastDebug("Skipping after delay");
                             world.setTime(world.getTime()+24000-(world.getTime()%24000));
                             world.setStorm(false);
                             skipping.remove(pWorld);
-                            Bukkit.getServer().getGlobalRegionScheduler().runDelayed(plugin, lastTask -> {
+                            scheduler.runDelayedTask(() -> {
                                 sleepingWorlds.put(pWorld, 0f);
                                 recentlySkipped.remove(pWorld);
                                 if (player.isOnline() && debugPlayers.contains(player.getUniqueId())) {

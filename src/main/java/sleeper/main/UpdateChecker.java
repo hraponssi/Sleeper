@@ -12,15 +12,17 @@ import java.util.function.Consumer;
 public class UpdateChecker {
 
     private final Main plugin;
+    private final Scheduler scheduler;
     private final int resourceId;
 
-    public UpdateChecker(Main plugin, int resourceId) {
+    public UpdateChecker(Main plugin, Scheduler scheduler, int resourceId) {
         this.plugin = plugin;
+        this.scheduler = scheduler;
         this.resourceId = resourceId;
     }
 
     public void getVersion(final Consumer<String> consumer) {
-        Bukkit.getServer().getAsyncScheduler().runNow(this.plugin, ScheduledTask -> {
+        scheduler.runAsyncTask(() -> {
             try (InputStream is = new URL(
                     "https://api.spigotmc.org/legacy/update.php?resource=" + this.resourceId + "/~").openStream();
                     Scanner scann = new Scanner(is)) {

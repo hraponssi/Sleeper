@@ -13,20 +13,23 @@ import org.bukkit.event.Listener;
 import dev.geco.gsit.api.GSitAPI;
 import dev.geco.gsit.api.event.PlayerPoseEvent;
 import dev.geco.gsit.api.event.PlayerStopPoseEvent;
-
+import net.kyori.adventure.audience.Audience;
 import sleeper.main.Main;
 import sleeper.main.MessageHandler;
+import sleeper.main.Scheduler;
 import sleeper.main.Voting;
 
 public class GSitHandler implements Listener {
     DecimalFormat dfrmt = new DecimalFormat();
 
     Main plugin;
+    Scheduler scheduler;
     Voting voting;
     MessageHandler messageFormatting;
     
-    public GSitHandler (Main plugin, Voting voting, MessageHandler messageFormatting) {
+    public GSitHandler (Main plugin, Scheduler scheduler, Voting voting, MessageHandler messageFormatting) {
         this.plugin = plugin;
+        this.scheduler = scheduler;
         this.voting = voting;
         this.messageFormatting = messageFormatting;
         dfrmt.setMaximumFractionDigits(2);
@@ -45,7 +48,7 @@ public class GSitHandler implements Listener {
         if (pose != Pose.SLEEPING) return;
         // The player entered a sleep pose, do the same as with normal sleeping
         // Delay sleep if configured to do so
-        Bukkit.getServer().getGlobalRegionScheduler().runDelayed(this.plugin, ScheduledTask -> {
+        scheduler.runDelayedTask(() -> {
             var latestPose = GSitAPI.getPoseByPlayer(player).getPose();
             if (latestPose == null || latestPose != Pose.SLEEPING) return;
             if (voting.blockBedsAfterVoting && voting.getVotingWorlds().contains(player.getWorld().getName())
@@ -61,6 +64,7 @@ public class GSitHandler implements Listener {
     public void onGSitPoseStop(PlayerStopPoseEvent event) {
         if (!poseToSleep) return;
         Player player = event.getPlayer();
+        Audience audience = plugin.adventure().player(player);
         Pose pose = event.getPose().getPose();
         if (pose != Pose.SLEEPING) return;
         // The player left a sleep pose, do the same as with leaving a bed
@@ -72,7 +76,7 @@ public class GSitHandler implements Listener {
         // An additional check on worldsleepers is done so the message only comes if you stop during that night
         if (!plugin.getRecentlySkipped().contains(worldName) 
                 && plugin.getWorldSleepers(worldName).contains(player.getUniqueId())) {
-            player.sendMessage(messageFormatting.parseMessage(plugin.sleepInfo
+            audience.sendMessage(messageFormatting.parseMessage(plugin.sleepInfo
                     .replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
                     .replace("%count_needed%", dfrmt.format(countNeeded)).replace("%count%", dfrmt.format(wsleeping))));
         }

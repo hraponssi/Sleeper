@@ -15,12 +15,14 @@ public class EventHandlers implements Listener {
     DecimalFormat dfrmt = new DecimalFormat();
 
     Main plugin;
+    Scheduler scheduler;
     Voting voting;
     MessageHandler messageHandler;
 
-    public EventHandlers(Main plugin, Voting voting, MessageHandler messageFormatting) {
+    public EventHandlers(Main plugin, Scheduler scheduler, Voting voting, MessageHandler messageFormatting) {
         super();
         this.plugin = plugin;
+        this.scheduler = scheduler;
         this.voting = voting;
         this.messageHandler = messageFormatting;
         dfrmt.setMaximumFractionDigits(2);
@@ -30,7 +32,7 @@ public class EventHandlers implements Listener {
     public void onBedEnter(PlayerBedEnterEvent event) {
         Player player = event.getPlayer();
         // Delay sleep if configured to do so
-        Bukkit.getServer().getGlobalRegionScheduler().runDelayed(this.plugin, ScheduledTask -> {
+        scheduler.runDelayedTask(() -> {
             if (!player.isSleeping()) return;
             if (voting.blockBedsAfterVoting && voting.votingWorlds.contains(player.getWorld().getName())
                     && voting.hasVoted(player)) {
