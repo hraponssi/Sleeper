@@ -63,6 +63,8 @@ public class Main extends JavaPlugin {
     boolean actionbarMessages = false;
     boolean persistentSleepInfo = false;
     int persistenceTime = 30;
+    long dayTime = 0;
+    public long nightTime = 12542;
     
     boolean ignoreAFKPlayers = true;
 
@@ -149,12 +151,12 @@ public class Main extends JavaPlugin {
                     long time = world.getTime();
                     world.setTime(time + skipSpeed);
                     world.setStorm(false);
-                    if (time%24000 < 2000) {
+                    if (time < dayTime+2000 && time >= dayTime) {
                         /*
                         world.setTime(0);
                         time = 0;
                         */
-                        messageHandler.broadcastDebug("Looks like it's time < 2000, stop the animation.");
+                        messageHandler.broadcastDebug("Looks like it's time < dayTime+2000, stop the animation.");
                         skipping.remove(worldName);
                         scheduler.runDelayedTask(() -> { // Force sleeping count to 0 in case it has become wrong
                             sleepingWorlds.put(worldName, 0f);
@@ -181,7 +183,7 @@ public class Main extends JavaPlugin {
                 World world = Bukkit.getWorld(worldName);
                 long time = world.getTime();
                 // Just in case, clear world sleeper lists if it is the morning
-                if (time%24000 < 2000) {
+                if (time < dayTime+2000 && time >= dayTime) {
                     worldSleepers.get(worldName).clear();
                     worldLatestSleepAge.remove(worldName);
                     worldLatestSleepMessage.remove(worldName);
@@ -226,6 +228,8 @@ public class Main extends JavaPlugin {
         actionbarMessages = config.getBoolean("ActionbarMessages");
         persistentSleepInfo = config.getBoolean("PersistentSleepInfo");
         persistenceTime = config.getInt("PersistenceTime");
+        dayTime = config.getLong("DayTime");
+        nightTime = config.getLong("NightTime");
         if (!delaySleep) {
             delaySeconds = 0;
         }
@@ -341,7 +345,7 @@ public class Main extends JavaPlugin {
                     if (!useAnimation) {
                         scheduler.runDelayedTask(() -> {
                             messageHandler.broadcastDebug("Skipping after delay");
-                            world.setTime(world.getTime()+24000-(world.getTime()%24000));
+                            world.setTime(dayTime);
                             world.setStorm(false);
                             skipping.remove(pWorld);
                             scheduler.runDelayedTask(() -> {

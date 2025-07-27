@@ -67,12 +67,12 @@ public class Voting {
         World world = player.getWorld();
         String pWorld = world.getName();
         plugin.onlinePlayers(pWorld); // Update listed count of online players for the world
-        if (!votingWorlds.contains(pWorld) && world.getTime() >= 12542) { // Bukkit doesn't have chatcomponent, don't use it
+        if (!votingWorlds.contains(pWorld) && world.getTime() >= plugin.nightTime) { // Bukkit doesn't have chatcomponent, don't use it
             votingWorlds.add(pWorld);
             if (limitedVoteTime) votingWorldTimes.put(pWorld, maxVoteTime * 20); // Config time in seconds but var in ticks
             // Send vote message to world
             if (sendVotesOnStart) world.getPlayers().forEach(wPlayer -> sendVoteMsg(wPlayer));
-        } else if (world.getTime() >= 12542) { // If a vote is ongoing send just the sleeper the menu
+        } else if (world.getTime() >= plugin.nightTime) { // If a vote is ongoing send just the sleeper the menu
             sendVoteMsg(player);
         }
     }
@@ -222,7 +222,7 @@ public class Voting {
                 }
                 votingWorldTimes.replace(worldName, timeLeft);
             }
-            if (time < 2000) { // End vote, day time.
+            if (time < plugin.dayTime+2000 && time >= plugin.dayTime) { // End vote, day time.
                 endVote(worldName);
             } else { // Check if the votes are enough for a skip
                 int yVotes = countYes(worldName);

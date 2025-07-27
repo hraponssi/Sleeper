@@ -18,6 +18,11 @@ ActionbarMessages: false
 PersistentSleepInfo: false
 PersistenceTime: 30
 
+# The time that should be skipped up to. 0 is 6:00am, and every 1000 is an hour added.
+DayTime: 0
+# Time after which non bed sleeping is allowed. E.g. voting and GSit
+NightTime: 12542
+
 # Other settings
 BroadcastSleepInfo: false
 

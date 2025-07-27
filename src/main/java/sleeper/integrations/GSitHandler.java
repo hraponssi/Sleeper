@@ -43,7 +43,7 @@ public class GSitHandler implements Listener {
         Player player = event.getPlayer();
         World world = player.getWorld();
         // Manually check time as you can sleep pose at any time
-        if (world.getTime() < 12000) return;
+        if (world.getTime() < plugin.nightTime) return;
         Pose pose = event.getPose().getPose();
         if (pose != Pose.SLEEPING) return;
         // The player entered a sleep pose, do the same as with normal sleeping
