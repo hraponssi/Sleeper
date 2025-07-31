@@ -135,7 +135,7 @@ public class Main extends JavaPlugin {
             essentials = (Essentials) pm.getPlugin("Essentials");
             integrationsFound.add("Essentials");
         }
-        if (integrationsFound.length() != 0) {
+        if (integrationsFound.length() != 1) { // More than just the suffix period.
             getLogger().info("Loaded integrations for: " + integrationsFound.toString());
         } else {
             getLogger().info("Found no plugin integrations.");
