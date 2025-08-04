@@ -59,12 +59,12 @@
 		<dependency>
 			<groupId>net.kyori</groupId>
 			<artifactId>adventure-text-minimessage</artifactId>
-			<version>4.22.0</version>
+			<version>4.24.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.kyori</groupId>
 			<artifactId>adventure-platform-bukkit</artifactId>
-			<version>4.4.0</version>
+			<version>4.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.Gecolay.GSit</groupId>
