@@ -34,7 +34,6 @@ import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import sleeper.integrations.GSitHandler;
-import sleeper.integrations.AFKPlus;
 
 public class Main extends JavaPlugin {
     MessageHandler messageHandler;
@@ -45,7 +44,6 @@ public class Main extends JavaPlugin {
     
     // Soft dependency integrations with other plugin apis
     GSitHandler gSitHandler;
-    AFKPlus afkPlus;
     Essentials essentials;
 
     DecimalFormat dfrmt = new DecimalFormat();
@@ -126,10 +124,6 @@ public class Main extends JavaPlugin {
             gSitHandler = new GSitHandler(this, scheduler, voting, messageHandler);
             pm.registerEvents(gSitHandler, this);
             integrationsFound.add("GSit");
-        }
-        if (pm.getPlugin("AFKPlus") != null) {
-            afkPlus = new AFKPlus();
-            integrationsFound.add("AFKPlus");
         }
         if (pm.getPlugin("Essentials") != null) {
             essentials = (Essentials) pm.getPlugin("Essentials");
@@ -380,7 +374,6 @@ public class Main extends JavaPlugin {
     }
     
     public boolean isAFK(Player player) {
-        if (afkPlus != null && afkPlus.IsPlayerAFK(player)) return true;
         if (essentials != null && essentials.getUser(player).isAfk()) return true;
         return false;
     }

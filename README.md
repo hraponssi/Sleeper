@@ -18,7 +18,7 @@ All the messages can be customized and formatted with color codes or MiniMessage
 
 Plugin integrations:
 - Sleep by lying down with GSit.
-- Ignore afk players with AFKPlus and Essentials.
+- Ignore afk players with Essentials.
 
 ### Commands and permissions
 

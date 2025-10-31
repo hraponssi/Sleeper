@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import dev.geco.gsit.api.GSitAPI;
 import dev.geco.gsit.api.event.PlayerPoseEvent;
 import dev.geco.gsit.api.event.PlayerStopPoseEvent;
+import dev.geco.gsit.model.PoseType;
 import net.kyori.adventure.audience.Audience;
 import sleeper.main.Main;
 import sleeper.main.MessageHandler;
@@ -44,13 +45,13 @@ public class GSitHandler implements Listener {
         World world = player.getWorld();
         // Manually check time as you can sleep pose at any time
         if (world.getTime() < plugin.nightTime) return;
-        Pose pose = event.getPose().getPose();
-        if (pose != Pose.SLEEPING) return;
+        PoseType pose = event.getPose().getPoseType();
+        if (pose != PoseType.LAY) return;
         // The player entered a sleep pose, do the same as with normal sleeping
         // Delay sleep if configured to do so
         scheduler.runDelayedTask(() -> {
-            var latestPose = GSitAPI.getPoseByPlayer(player).getPose();
-            if (latestPose == null || latestPose != Pose.SLEEPING) return;
+            var latestPose = GSitAPI.getPoseByPlayer(player).getPoseType();
+            if (latestPose == null || latestPose != PoseType.LAY) return;
             if (voting.blockBedsAfterVoting && voting.getVotingWorlds().contains(player.getWorld().getName())
                     && voting.hasVoted(player)) {
                 voting.voteYes(player);
@@ -65,8 +66,8 @@ public class GSitHandler implements Listener {
         if (!poseToSleep) return;
         Player player = event.getPlayer();
         Audience audience = plugin.adventure().player(player);
-        Pose pose = event.getPose().getPose();
-        if (pose != Pose.SLEEPING) return;
+        PoseType pose = event.getPose().getPoseType();
+        if (pose != PoseType.LAY) return;
         // The player left a sleep pose, do the same as with leaving a bed
         String worldName = player.getWorld().getName();
         float wsleeping = plugin.getSleepingWorlds().getOrDefault(worldName, 0f);
