@@ -67,7 +67,7 @@ public class Voting {
         World world = player.getWorld();
         String pWorld = world.getName();
         plugin.onlinePlayers(pWorld); // Update listed count of online players for the world
-        if (!votingWorlds.contains(pWorld) && world.getTime() >= plugin.nightTime) { // Bukkit doesn't have chatcomponent, don't use it
+        if (!votingWorlds.contains(pWorld) && world.getTime() >= plugin.nightTime) {
             votingWorlds.add(pWorld);
             if (limitedVoteTime) votingWorldTimes.put(pWorld, maxVoteTime * 20); // Config time in seconds but var in ticks
             // Send vote message to world
