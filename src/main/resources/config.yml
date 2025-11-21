@@ -38,6 +38,7 @@ SendVotesOnStart: true
 StartWithoutSleep: false
 MaxVoteTime: 60
 LimitedVoteTime: false
+AutomaticStart: false
 
 # Plugin integrations
 # GSit

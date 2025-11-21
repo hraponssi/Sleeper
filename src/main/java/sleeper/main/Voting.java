@@ -43,11 +43,12 @@ public class Voting {
     int skipVotePercent = 50;
     public boolean blockBedsAfterVoting = false;
     boolean bossbarVoteCount = true;
-    boolean actionVoteCount = true;
+    boolean actionVoteCount = false;
     boolean sendVotesOnStart = true;
     boolean voteStarts = false;
     int maxVoteTime = 60;
     boolean limitedVoteTime = false;
+    boolean automaticStart = false;
 
     // Message Strings
     String voteTitle = "&aSleep > &7Vote below on skipping the night:";
@@ -74,6 +75,17 @@ public class Voting {
             if (sendVotesOnStart) world.getPlayers().forEach(wPlayer -> sendVoteMsg(wPlayer));
         } else if (world.getTime() >= plugin.nightTime) { // If a vote is ongoing send just the sleeper the menu
             sendVoteMsg(player);
+        }
+    }
+    
+    public void startVote(World world) {
+        String pWorld = world.getName();
+        plugin.onlinePlayers(pWorld); // Update listed count of online players for the world
+        if (!votingWorlds.contains(pWorld) && world.getTime() >= plugin.nightTime) {
+            votingWorlds.add(pWorld);
+            if (limitedVoteTime) votingWorldTimes.put(pWorld, maxVoteTime * 20); // Config time in seconds but var in ticks
+            // Send vote message to world
+            if (sendVotesOnStart) world.getPlayers().forEach(wPlayer -> sendVoteMsg(wPlayer));
         }
     }
 
@@ -190,6 +202,13 @@ public class Voting {
     }
 
     public void tick() {
+        if (automaticStart) {
+            for (World world : Bukkit.getWorlds().stream().filter(w -> !votingWorlds.contains(w.getName())).toList()) {
+                if (world.getTime() >= plugin.nightTime) {
+                    startVote(world);
+                }
+            }
+        }
         for (String worldName : new ArrayList<String>(votingWorlds)) {
             World world = Bukkit.getWorld(worldName);
             long time = world.getTime();
@@ -265,6 +284,7 @@ public class Voting {
         maxVoteTime = config.getInt("MaxVoteTime");
         limitedVoteTime = config.getBoolean("LimitedVoteTime");
         voteTimedOut = config.getString("VoteTimedOut");
+        automaticStart = config.getBoolean("AutomaticStart");
     }
     
     public ArrayList<String> getVotingWorlds() {
