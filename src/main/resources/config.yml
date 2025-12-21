@@ -47,9 +47,9 @@ GSitPoseToSleep: false
 IgnoreAFKPlayers: true
 
 # General Messages
-SleepInfo: "&aSleep > &7%percent% (%count%) out of a minimum of 25% sleeping."
+SleepInfo: "&aSleep > &7%percent% (%count%) out of a minimum of %percent_needed% sleeping."
 NightSkip: 
-  - "&aSleep > &7At least 25% of online users sleeping (%count%), skipping the night."
+  - "&aSleep > &7At least %percent_needed% of online users sleeping (%count%), skipping the night."
 Ignored: "&cSleep > &7You are still being ignored for sleep calculations!"
 
 # Command messages

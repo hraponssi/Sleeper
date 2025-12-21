@@ -300,6 +300,7 @@ public class Main extends JavaPlugin {
                 // Sleepinfo message
                 String sleepInfoMsg = sleepInfo.replace("%percent%", dfrmt.format(percentage) + "%")
                         .replace("%count%", dfrmt.format(wsleeping))
+                        .replace("%percent_needed%", dfrmt.format(skipPercentage) + "%")
                         .replace("%count_needed%", dfrmt.format(countNeeded))
                         .replace("%player%", player.getName());
                 worldLatestSleepMessage.put(pWorld, sleepInfoMsg);
@@ -329,6 +330,7 @@ public class Main extends JavaPlugin {
                         messageHandler.sendMessage(players,
                                 chosenMessage.replace("%percent%", dfrmt.format(percentage) + "%")
                                 .replace("%count%", dfrmt.format(wsleeping))
+                                .replace("%percent_needed%", dfrmt.format(skipPercentage)+ "%")
                                 .replace("%count_needed%", dfrmt.format(countNeeded))
                                 .replace("%player%", player.getName()));
                     }
