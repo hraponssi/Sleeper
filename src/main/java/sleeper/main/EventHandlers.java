@@ -2,7 +2,6 @@ package sleeper.main;
 
 import java.text.DecimalFormat;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -55,6 +54,7 @@ public class EventHandlers implements Listener {
         if (!plugin.recentlySkipped.contains(worldName)) {
             messageHandler.sendMessage(player, plugin.sleepInfo
                     .replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
+                    .replace("%percent_needed%", dfrmt.format(plugin.skipPercentage) + "%")
                     .replace("%count_needed%", dfrmt.format(countNeeded)).replace("%count%", dfrmt.format(wsleeping)));
         }
         plugin.getWorldSleepers(worldName).remove(player.getUniqueId());
