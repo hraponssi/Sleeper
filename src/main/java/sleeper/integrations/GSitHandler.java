@@ -79,6 +79,7 @@ public class GSitHandler implements Listener {
                 && plugin.getWorldSleepers(worldName).contains(player.getUniqueId())) {
             audience.sendMessage(messageFormatting.parseMessage(plugin.sleepInfo
                     .replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
+                    .replace("%percent_needed%", dfrmt.format(plugin.skipPercentage) + "%")
                     .replace("%count_needed%", dfrmt.format(countNeeded)).replace("%count%", dfrmt.format(wsleeping))));
         }
         plugin.getWorldSleepers(worldName).remove(player.getUniqueId());
