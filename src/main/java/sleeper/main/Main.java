@@ -146,10 +146,6 @@ public class Main extends JavaPlugin {
                     world.setTime(time + skipSpeed);
                     world.setStorm(false);
                     if (time < dayTime+2000 && time >= dayTime) {
-                        /*
-                        world.setTime(0);
-                        time = 0;
-                        */
                         messageHandler.broadcastDebug("Looks like it's time < dayTime+2000, stop the animation.");
                         skipping.remove(worldName);
                         scheduler.runDelayedTask(() -> { // Force sleeping count to 0 in case it has become wrong
@@ -157,6 +153,19 @@ public class Main extends JavaPlugin {
                             recentlySkipped.remove(worldName);
                         }, 20L);
                     }
+                } else { // If animation is disabled skip with a delay
+                    messageHandler.broadcastDebug("Skipping without animation.");
+                    skipping.remove(worldName);
+                    scheduler.runDelayedTask(() -> {
+                        World world = Bukkit.getWorld(worldName);
+                        world.setTime(dayTime);
+                        world.setStorm(false);
+                        scheduler.runDelayedTask(() -> { // Force sleeping count to 0 in case it has become wrong
+                            sleepingWorlds.put(worldName, 0f);
+                            recentlySkipped.remove(worldName);
+                        }, 20L);
+                        messageHandler.broadcastDebug("Did delayed time set.");
+                    }, 120L);
                 }
             }
             for (String worldName : worldLatestSleepAge.keySet()) {
@@ -184,7 +193,7 @@ public class Main extends JavaPlugin {
                 }
             }
             for (String worldName : worldLatestSleepAge.keySet()) {
-                if (!worldLatestSleepMessage.containsKey(worldName)) return;
+                if (!worldLatestSleepMessage.containsKey(worldName)) continue;
                 if (!persistentSleepInfo) return;
                 if (!actionbarMessages) return;
                 String msg = worldLatestSleepMessage.get(worldName);
@@ -262,6 +271,13 @@ public class Main extends JavaPlugin {
         });
     }
 
+    public void initiateSkip(String worldName) {
+        worldSleepers.getOrDefault(worldName, new ArrayList<>()).clear();
+        recentlySkipped.add(worldName);
+        skipping.add(worldName);
+        voting.endVote(worldName);
+    }
+
     public void sleep(Player player, boolean skipSleepCheck) {
         Audience audience = adventure().player(player);
         World world = player.getWorld();
@@ -272,6 +288,7 @@ public class Main extends JavaPlugin {
         scheduler.runDelayedTask(() -> {
             if (player.isOnline() && (player.isSleeping() == true || skipSleepCheck)) {
                 float wonline = onlinePlayers(pWorld);
+                if (wonline == 0) wonline = 1; // TODO: There is probably a cleaner way to account for this.
                 float wsleeping = sleepingWorlds.getOrDefault(player.getWorld().getName(), 0f);
                 // Increase sleeper count
                 wsleeping++;
@@ -322,7 +339,7 @@ public class Main extends JavaPlugin {
                     voting.voteYes(player);
                 }
                 // Check if skip should be done
-                if (percentage >= skipPercentage && !skipping.contains(pWorld)) { // Skip
+                if (percentage >= skipPercentage && !skipping.contains(pWorld) && !recentlySkipped.contains(pWorld)) { // Skip
                     messageHandler.broadcastDebug("Skipping...");
                     worldLatestSleepAge.remove(pWorld);
                     String chosenMessage = nightSkip.get(random.nextInt(nightSkip.size()));
@@ -335,26 +352,7 @@ public class Main extends JavaPlugin {
                                 .replace("%player%", player.getName()));
                     }
 
-                    worldSleepers.get(pWorld).clear();
-                    skipping.add(pWorld);
-                    recentlySkipped.add(pWorld);
-                    if (!useAnimation) {
-                        scheduler.runDelayedTask(() -> {
-                            messageHandler.broadcastDebug("Skipping after delay");
-                            world.setTime(dayTime);
-                            world.setStorm(false);
-                            skipping.remove(pWorld);
-                            scheduler.runDelayedTask(() -> {
-                                sleepingWorlds.put(pWorld, 0f);
-                                recentlySkipped.remove(pWorld);
-                                if (player.isOnline() && debugPlayers.contains(player.getUniqueId())) {
-                                    messageHandler.sendDebug(player, "sleeping set to 0");
-                                }
-                            }, 20L);
-                        }, 120L);
-                    } else {
-                        messageHandler.broadcastDebug("Skipping with animation");
-                    }
+                    initiateSkip(pWorld);
                 }
             }
         }, 1L);

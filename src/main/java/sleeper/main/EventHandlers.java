@@ -48,7 +48,8 @@ public class EventHandlers implements Listener {
         Player player = event.getPlayer();
         String worldName = player.getWorld().getName();
         float wsleeping = plugin.sleepingWorlds.getOrDefault(worldName, 0f);
-        float wonline = plugin.playersOnline.getOrDefault(worldName, 0f);
+        float wonline = plugin.onlinePlayers(worldName);
+        if (wonline == 0) wonline = 1; // TODO: There is probably a cleaner way to account for this.
         int countNeeded = (int) Math.ceil(wonline * (plugin.skipPercentage / 100d));
         if (wsleeping > 0) plugin.sleepingWorlds.put(worldName, wsleeping - 1);
         if (!plugin.recentlySkipped.contains(worldName)) {
@@ -77,7 +78,7 @@ public class EventHandlers implements Listener {
         String worldName = player.getWorld().getName();
         if (plugin.ignorePlayers.contains(player.getUniqueId())) {
             float wsleeping = plugin.sleepingWorlds.getOrDefault(worldName, 0f);
-            float wonline = plugin.playersOnline.getOrDefault(worldName, 0f);
+            float wonline = plugin.onlinePlayers(worldName);
             int countNeeded = (int) Math.ceil(wonline * (plugin.skipPercentage / 100d));
             messageHandler.sendMessage(player, plugin.ignored
                     .replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")

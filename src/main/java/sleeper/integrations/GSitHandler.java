@@ -69,7 +69,8 @@ public class GSitHandler implements Listener {
         // The player left a sleep pose, do the same as with leaving a bed
         String worldName = player.getWorld().getName();
         float wsleeping = plugin.getSleepingWorlds().getOrDefault(worldName, 0f);
-        float wonline = plugin.getPlayersOnline().getOrDefault(worldName, 0f);
+        float wonline = plugin.onlinePlayers(worldName);
+        if (wonline == 0) wonline = 1; // TODO: There is probably a cleaner way to account for this.
         int countNeeded = (int) Math.ceil(wonline * (plugin.skipPercentage / 100d));
         if (wsleeping > 0) plugin.getSleepingWorlds().put(worldName, wsleeping - 1);
         // An additional check on worldsleepers is done so the message only comes if you stop during that night

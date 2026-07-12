@@ -185,6 +185,7 @@ public class Voting {
     }
 
     public void endVote(String worldName) {
+        if (!votingWorlds.contains(worldName)) return;
         votingWorlds.remove(worldName);
         plugin.bar.removeAll();
         // Clear votes from that world
@@ -212,7 +213,7 @@ public class Voting {
         for (String worldName : new ArrayList<String>(votingWorlds)) {
             World world = Bukkit.getWorld(worldName);
             long time = world.getTime();
-            if (plugin.skipping.contains(worldName)) continue;
+            if (plugin.recentlySkipped.contains(worldName)) continue;
             if (bossbarVoteCount) {
                 plugin.bar.setTitle(
                         messageHandler.parseMessageString(listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
@@ -224,10 +225,12 @@ public class Voting {
             }
             if (actionVoteCount) {
                 tickCounter++;
-                if (tickCounter % 20 != 0) return;
-                for (Player player : world.getPlayers()) {
-                    messageHandler.sendActionbarMessage(player, listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
-                                            .replace("%no%", dfrmt.format(countNo(worldName))));
+                if (tickCounter % 20 == 0) {
+                    for (Player player : world.getPlayers()) {
+                        messageHandler.sendActionbarMessage(player, listVotes.replace("%yes%", dfrmt.format(countYes(worldName)))
+                                                .replace("%no%", dfrmt.format(countNo(worldName))));
+                    }
+                    tickCounter = 0;
                 }
             }
             if (votingWorldTimes.containsKey(worldName)) {
@@ -246,12 +249,13 @@ public class Voting {
             } else { // Check if the votes are enough for a skip
                 int yVotes = countYes(worldName);
                 int nVotes = countNo(worldName);
+                float wonline = plugin.onlinePlayers(worldName);
+                if (wonline == 0) wonline = 1; // TODO: There is probably a cleaner way to account for this.
                 float skipFactor = ((yVotes * yesMultiplier) - (nVotes * noMultiplier))
-                        / plugin.playersOnline.get(worldName); // Decimal yes votes - no votes divided by world players
+                        / wonline; // Decimal yes votes - no votes divided by world players
                 float skipMargin = skipVotePercent * 0.01f;
                 if (skipFactor >= skipMargin) {
-                    plugin.skipping.add(worldName);
-                    plugin.recentlySkipped.add(worldName);
+                    plugin.initiateSkip(worldName);
                     world.getPlayers()
                             .forEach(player -> messageHandler.sendMessage(player, skipByVote));
                     plugin.getLogger().info("Skipping night by vote in " + worldName);
