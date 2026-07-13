@@ -11,7 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -40,11 +39,10 @@ public class Commands implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String command, String[] args) {
-        Audience audience = plugin.adventure().sender(sender);
         switch (cmd.getName().toLowerCase()) {
         case "sleep":
             if (args.length < 1) {
-                audience.sendMessage(messageHandler.parseMessage(playerHelpMsg(sender)));
+                sender.sendMessage(messageHandler.parseMessage(playerHelpMsg(sender)));
                 break;
             }
             // Console compatible commands
@@ -55,25 +53,25 @@ public class Commands implements CommandExecutor {
                     if (!isPlayer(sender))  return true;
                     UUID uuid = ((Player) sender).getUniqueId();
                     if (plugin.ignorePlayers.contains(uuid)) {
-                        audience.sendMessage(messageHandler.parseMessage(msgSelfIgnoreOff));
+                        sender.sendMessage(messageHandler.parseMessage(msgSelfIgnoreOff));
                         plugin.ignorePlayers.remove(uuid);
                     } else {
-                        audience.sendMessage(messageHandler.parseMessage(msgSelfIgnoreOn));
+                        sender.sendMessage(messageHandler.parseMessage(msgSelfIgnoreOn));
                         plugin.ignorePlayers.add(uuid);
                     }
                 } else if (args.length < 3) { // Another player
                     String targetName = args[1];
                     Player target = Bukkit.getPlayer(targetName);
                     if (target == null) {
-                        audience.sendMessage(messageHandler
+                        sender.sendMessage(messageHandler
                                 .parseMessage(msgPlayerNotFound.replaceAll("%player%", targetName)));
                     } else {
                         if (plugin.ignorePlayers.contains(target.getUniqueId())) {
-                            audience.sendMessage(messageHandler
+                            sender.sendMessage(messageHandler
                                     .parseMessage(msgOtherIgnoreOff.replaceAll("%player%", target.getName())));
                             plugin.ignorePlayers.remove(target.getUniqueId());
                         } else {
-                            audience.sendMessage(messageHandler
+                            sender.sendMessage(messageHandler
                                     .parseMessage(msgOtherIgnoreOn.replaceAll("%player%", target.getName())));
                             plugin.ignorePlayers.add(target.getUniqueId());
                         }
@@ -83,23 +81,23 @@ public class Commands implements CommandExecutor {
                     String stateString = args[2].toUpperCase();
                     Player target = Bukkit.getPlayer(targetName);
                     if (target == null) {
-                        audience.sendMessage(messageHandler
+                        sender.sendMessage(messageHandler
                                 .parseMessage(msgPlayerNotFound.replaceAll("%player%", targetName)));
                     } else if (!stateString.equals("TRUE") && !stateString.equals("FALSE")) {
-                        audience.sendMessage(messageHandler
+                        sender.sendMessage(messageHandler
                                 .parseMessage(msgInvalidState.replaceAll("%input%", stateString)));
                     } else {
                         if (stateString.equals("TRUE")) {
                             if (!plugin.ignorePlayers.contains(target.getUniqueId())) {
-                                audience.sendMessage(messageHandler
+                                sender.sendMessage(messageHandler
                                         .parseMessage(msgOtherIgnoreOn.replaceAll("%player%", target.getName())));
                                 plugin.ignorePlayers.add(target.getUniqueId());
                             } else {
-                                audience.sendMessage(messageHandler
+                                sender.sendMessage(messageHandler
                                         .parseMessage(msgOtherAlreadyIgnored.replaceAll("%player%", target.getName())));
                             }
                         } else {
-                            audience.sendMessage(messageHandler
+                            sender.sendMessage(messageHandler
                                     .parseMessage(msgOtherIgnoreOff.replaceAll("%player%", target.getName())));
                             plugin.ignorePlayers.remove(target.getUniqueId());
                         }
@@ -109,7 +107,7 @@ public class Commands implements CommandExecutor {
             case "reload":
                 if (!hasPermission(sender, "sleeper.reload")) return true;
                 plugin.loadConfig();
-                audience.sendMessage(messageHandler.parseMessage(msgConfigReloaded));
+                sender.sendMessage(messageHandler.parseMessage(msgConfigReloaded));
                 return true;
             }
             if (!isPlayer(sender)) return true;
@@ -132,63 +130,61 @@ public class Commands implements CommandExecutor {
             case "debug": // A bunch of debug data
                 if (!hasPermission(sender, "sleeper.data")) break;
                 if (plugin.debugPlayers.contains(player.getUniqueId())) {
-                    audience.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                    sender.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
                             .append(Component.text("Debug disabled").color(NamedTextColor.GRAY)));
                     plugin.debugPlayers.remove(player.getUniqueId());
                 } else {
-                    audience.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                    sender.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
                             .append(Component.text("Debug enabled").color(NamedTextColor.GRAY)));
                     plugin.debugPlayers.add(player.getUniqueId());
                 }
 
                 // Send all kinds of current data
-                audience.sendMessage(Component.text("Sleep data:").color(NamedTextColor.RED));
+                sender.sendMessage(Component.text("Sleep data:").color(NamedTextColor.RED));
                 if (player.getGameMode().equals(GameMode.SPECTATOR) || player.getGameMode().equals(GameMode.CREATIVE)) {
-                    audience.sendMessage(Component
+                    sender.sendMessage(Component
                             .text("Note: you will be ignored from sleep calculations in spectator or creative mode.")
                             .color(NamedTextColor.GRAY));
                 }
-                audience.sendMessage(Component.text("Sleeping per world: ").color(NamedTextColor.GREEN));
-                plugin.sleepingWorlds.keySet().forEach(world -> audience
+                sender.sendMessage(Component.text("Sleeping per world: ").color(NamedTextColor.GREEN));
+                plugin.sleepingWorlds.keySet().forEach(world -> sender
                         .sendMessage(Component.text(world + " - " + plugin.sleepingWorlds.get(world).toString()).color(NamedTextColor.GRAY)));
-                audience.sendMessage(Component.text("Latest 'online' player count per world: ").color(NamedTextColor.GREEN));
-                plugin.playersOnline.keySet().forEach(world -> audience
+                sender.sendMessage(Component.text("Latest 'online' player count per world: ").color(NamedTextColor.GREEN));
+                plugin.playersOnline.keySet().forEach(world -> sender
                         .sendMessage(Component.text(world + " - " + plugin.playersOnline.get(world).toString()).color(NamedTextColor.GRAY)));
-                audience.sendMessage(Component.text("True online player count: ").color(NamedTextColor.GREEN)
+                sender.sendMessage(Component.text("True online player count: ").color(NamedTextColor.GREEN)
                         .append(Component.text(Bukkit.getOnlinePlayers().size()).color(NamedTextColor.GRAY)));
-                audience.sendMessage(Component.text("Skipping: ").color(NamedTextColor.GREEN)
+                sender.sendMessage(Component.text("Skipping: ").color(NamedTextColor.GREEN)
                         .append(Component.text(plugin.skipping.toString()).color(NamedTextColor.GRAY)));
                 int onlineIgnored = plugin.getOnlineIgnorers().size();
-                audience.sendMessage(Component.text("Ignored player count: ").color(NamedTextColor.GREEN)
+                sender.sendMessage(Component.text("Ignored player count: ").color(NamedTextColor.GREEN)
                         .append(Component.text(onlineIgnored).color(NamedTextColor.GRAY)));
-                audience.sendMessage(Component.text("Ignoring players: ").color(NamedTextColor.GREEN));
-                plugin.getOnlineIgnorers().forEach(p -> audience.sendMessage(Component.text(p.getName()).color(NamedTextColor.GRAY)));
+                sender.sendMessage(Component.text("Ignoring players: ").color(NamedTextColor.GREEN));
+                plugin.getOnlineIgnorers().forEach(p -> sender.sendMessage(Component.text(p.getName()).color(NamedTextColor.GRAY)));
                 break;
             default:
-                audience.sendMessage(messageHandler.parseMessage(playerHelpMsg(player)));
+                sender.sendMessage(messageHandler.parseMessage(playerHelpMsg(player)));
                 break;
             }
             break;
         default:
-            audience.sendMessage(messageHandler.parseMessage(playerHelpMsg(sender)));
+            sender.sendMessage(messageHandler.parseMessage(playerHelpMsg(sender)));
             break;
         }
         return true;
     }
 
     private boolean isPlayer(CommandSender sender) {
-        Audience audience = plugin.adventure().sender(sender);
         if (!(sender instanceof Player)) {
-            audience.sendMessage(messageHandler.parseMessage(msgOnlyPlayers));
+            sender.sendMessage(messageHandler.parseMessage(msgOnlyPlayers));
             return false;
         }
         return true;
     }
 
     private boolean hasPermission(CommandSender player, String permission) {
-        Audience audience = plugin.adventure().sender(player);
         if (!player.hasPermission(permission)) {
-            audience.sendMessage(messageHandler.parseMessage(plugin.noPermission));
+            player.sendMessage(messageHandler.parseMessage(plugin.noPermission));
             return false;
         }
         return true;

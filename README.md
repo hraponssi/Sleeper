@@ -4,7 +4,7 @@
 
 Customize skipping the night with an animation or voting.
 
-Requires Java 21. Supports Folia.
+Requires Java 21. Supports Folia and requires a server with Adventure API (Paper).
 
 ### Features of Sleeper
 

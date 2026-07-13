@@ -12,7 +12,6 @@ import dev.geco.gsit.api.GSitAPI;
 import dev.geco.gsit.api.event.PlayerPoseEvent;
 import dev.geco.gsit.api.event.PlayerStopPoseEvent;
 import dev.geco.gsit.model.PoseType;
-import net.kyori.adventure.audience.Audience;
 import sleeper.main.Main;
 import sleeper.main.MessageHandler;
 import sleeper.main.Scheduler;
@@ -63,7 +62,6 @@ public class GSitHandler implements Listener {
     public void onGSitPoseStop(PlayerStopPoseEvent event) {
         if (!poseToSleep) return;
         Player player = event.getPlayer();
-        Audience audience = plugin.adventure().player(player);
         PoseType pose = event.getPose().getPoseType();
         if (pose != PoseType.LAY) return;
         // The player left a sleep pose, do the same as with leaving a bed
@@ -76,7 +74,7 @@ public class GSitHandler implements Listener {
         // An additional check on worldsleepers is done so the message only comes if you stop during that night
         if (!plugin.getRecentlySkipped().contains(worldName) 
                 && plugin.getWorldSleepers(worldName).contains(player.getUniqueId())) {
-            audience.sendMessage(messageFormatting.parseMessage(plugin.sleepInfo
+            player.sendMessage(messageFormatting.parseMessage(plugin.sleepInfo
                     .replace("%percent%", dfrmt.format((wsleeping / wonline) * 100) + "%")
                     .replace("%percent_needed%", dfrmt.format(plugin.skipPercentage) + "%")
                     .replace("%count_needed%", dfrmt.format(countNeeded)).replace("%count%", dfrmt.format(wsleeping))));

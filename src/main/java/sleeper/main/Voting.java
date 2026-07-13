@@ -10,7 +10,6 @@ import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 
@@ -164,14 +163,13 @@ public class Voting {
             messageHandler.sendMessage(player, voteNotEnabled);
             return;
         }
-        Audience audience = plugin.adventure().player(player);
-        audience.sendMessage(messageHandler.parseMessage(voteTitle));
+        player.sendMessage(messageHandler.parseMessage(voteTitle));
         Component yesMessage = messageHandler.parseMessage(voteYes)
                 .clickEvent(ClickEvent.runCommand("/sleep yes"));
-        audience.sendMessage(yesMessage);
+        player.sendMessage(yesMessage);
         Component noMessage = messageHandler.parseMessage(voteNo)
                 .clickEvent(ClickEvent.runCommand("/sleep no"));
-        audience.sendMessage(noMessage);
+        player.sendMessage(noMessage);
     }
 
     public void showVotes(Player player) {

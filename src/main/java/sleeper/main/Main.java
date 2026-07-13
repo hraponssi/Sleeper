@@ -29,8 +29,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import com.earth2me.essentials.Essentials;
 
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import sleeper.integrations.GSitHandler;
@@ -48,8 +46,6 @@ public class Main extends JavaPlugin {
 
     DecimalFormat dfrmt = new DecimalFormat();
     Random random = new Random();
-    
-    private BukkitAudiences adventure;
 
     // Setting values
     boolean useAnimation = true;
@@ -87,19 +83,8 @@ public class Main extends JavaPlugin {
             .of("&aSleep > &7At least 25% of online users sleeping (%count%), skipping the night.");
     String ignored = "&cSleep > &7You are still being ignored for sleep calculations!";
     String noPermission = "&cYou don't have permission for that.";
-
-    public @NonNull BukkitAudiences adventure() {
-        if(this.adventure == null) {
-          throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
-        }
-        return this.adventure;
-    }
     
     public void onDisable() {
-        if (this.adventure != null) {
-            this.adventure.close();
-            this.adventure = null;
-        }
         PluginDescriptionFile pdfFile = this.getDescription();
         getLogger().info(pdfFile.getName() + " Has Been Disabled!");
     }
@@ -107,7 +92,6 @@ public class Main extends JavaPlugin {
     public void onEnable() {
         PluginDescriptionFile pdfFile = this.getDescription();
         getLogger().info(pdfFile.getName() + " Version " + pdfFile.getVersion() + " Has Been Enabled!");
-        this.adventure = BukkitAudiences.create(this);
         int pluginId = 15317;
         Metrics metrics = new Metrics(this, pluginId);
         PluginManager pm = getServer().getPluginManager();
@@ -279,7 +263,6 @@ public class Main extends JavaPlugin {
     }
 
     public void sleep(Player player, boolean skipSleepCheck) {
-        Audience audience = adventure().player(player);
         World world = player.getWorld();
         String pWorld = world.getName();
         Main plugin = this;
@@ -301,17 +284,17 @@ public class Main extends JavaPlugin {
                 if (percentage > 100) percentage = 100;
                 // Debug
                 if (debugPlayers.contains(player.getUniqueId())) {
-                    audience.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                    player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
                             .append(Component.text("eventhandlers.sleeping: ").color(NamedTextColor.GRAY)));
                     sleepingWorlds.keySet().forEach(
-                            lworld -> audience.sendMessage(Component.text(sleepingWorlds.get(lworld).toString()).color(NamedTextColor.GRAY)));
-                    audience.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                            lworld -> player.sendMessage(Component.text(sleepingWorlds.get(lworld).toString()).color(NamedTextColor.GRAY)));
+                    player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
                             .append(Component.text("eventhandlers.playersOnline: ").color(NamedTextColor.GRAY)));
                     playersOnline.keySet().forEach(
-                            lworld -> audience.sendMessage(Component.text(playersOnline.get(lworld).toString()).color(NamedTextColor.GRAY)));
-                    audience.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                            lworld -> player.sendMessage(Component.text(playersOnline.get(lworld).toString()).color(NamedTextColor.GRAY)));
+                    player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
                             .append(Component.text("skipping: " + skipping.toString()).color(NamedTextColor.GRAY)));
-                    audience.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
+                    player.sendMessage(Component.text("DEBUG: ").color(NamedTextColor.YELLOW)
                             .append(Component.text("voting: " + voting.votingWorlds.toString()).color(NamedTextColor.GRAY)));
                 }
                 // Sleepinfo message

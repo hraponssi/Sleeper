@@ -1,6 +1,5 @@
 package sleeper.main;
 
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -58,8 +57,7 @@ public class MessageHandler {
         if (plugin.actionbarMessages) {
             sendActionbarMessage(player, message);
         } else {
-            Audience audience = plugin.adventure().player(player);
-            audience.sendMessage(parseMessage(message));
+            player.sendMessage(parseMessage(message));
         }
     }
     
@@ -74,8 +72,7 @@ public class MessageHandler {
     }
     
     public void sendActionbarMessage(Player player, String message) {
-        Audience audience = plugin.adventure().player(player);
-        audience.sendActionBar(parseMessage(message));
+        player.sendActionBar(parseMessage(message));
     }
     
     // Broadcast a debug message to all debug players
