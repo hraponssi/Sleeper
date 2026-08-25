@@ -43,7 +43,7 @@ AutomaticStart: false
 # Plugin integrations
 # GSit
 GSitPoseToSleep: false
-# AFK plugins (Essentials)
+# AFK plugins (Essentials, JustAFK 1.2.0+)
 IgnoreAFKPlayers: true
 
 # General Messages

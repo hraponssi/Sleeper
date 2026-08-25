@@ -31,6 +31,7 @@ import com.earth2me.essentials.Essentials;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import pt.captainratax.justafk.api.JustAfkApi;
 import sleeper.integrations.GSitHandler;
 
 public class Main extends JavaPlugin {
@@ -43,6 +44,7 @@ public class Main extends JavaPlugin {
     // Soft dependency integrations with other plugin apis
     GSitHandler gSitHandler;
     Essentials essentials;
+    JustAfkApi justAfkApi;
 
     DecimalFormat dfrmt = new DecimalFormat();
     Random random = new Random();
@@ -112,6 +114,14 @@ public class Main extends JavaPlugin {
         if (pm.getPlugin("Essentials") != null) {
             essentials = (Essentials) pm.getPlugin("Essentials");
             integrationsFound.add("Essentials");
+        }
+        if (pm.isPluginEnabled("JustAFK")) {
+            try {
+                justAfkApi = Bukkit.getServicesManager().load(JustAfkApi.class);
+                if (justAfkApi != null) integrationsFound.add("JustAFK");
+            } catch (LinkageError error) {
+                getLogger().warning("JustAFK integration requires version 1.2.0 or newer.");
+            }
         }
         if (integrationsFound.length() != 1) { // More than just the suffix period.
             getLogger().info("Loaded integrations for: " + integrationsFound.toString());
@@ -358,6 +368,7 @@ public class Main extends JavaPlugin {
     
     public boolean isAFK(Player player) {
         if (essentials != null && essentials.getUser(player).isAfk()) return true;
+        if (justAfkApi != null && justAfkApi.isAfk(player)) return true;
         return false;
     }
     

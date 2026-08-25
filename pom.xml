@@ -4,7 +4,7 @@
 
 	<groupId>Sleeper</groupId>
 	<artifactId>Sleeper</artifactId>
-	<version>1.10.8</version>
+	<version>1.10.9</version>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -71,6 +71,12 @@
 			<groupId>net.essentialsx</groupId>
 			<artifactId>EssentialsX</artifactId>
 			<version>2.21.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.CaptainRatax</groupId>
+			<artifactId>JustAFK</artifactId>
+			<version>v1.2.0</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
